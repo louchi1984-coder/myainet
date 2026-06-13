@@ -15,7 +15,6 @@ claude-windows-myainet-connect.md
 
 # 打包产物
 *.skill
-!myainet.skill
 
 # 本地工具/编辑器配置
 .claude/
