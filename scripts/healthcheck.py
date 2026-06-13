@@ -40,8 +40,11 @@ def proc_running(pattern):
     """本机有没有命令行匹配 pattern 的进程。查不出返回 None（不下结论）。"""
     try:
         if IS_WIN:
+            # Name -like 'python*' 把「执行这条查询的 powershell 进程自己」排除掉——
+            # 否则它 argv 里就含 pattern（如 dashboard.py），会自匹配 → 永远假阳性、误判服务在跑。
+            # 我们查的服务（registry_server/dashboard/patrol）都是 python 脚本，按 python* 收窄正好。
             ps = ("if (Get-CimInstance Win32_Process | Where-Object "
-                  "{$_.CommandLine -like '*%s*'}){'YES'}else{'NO'}" % pattern)
+                  "{$_.Name -like 'python*' -and $_.CommandLine -like '*%s*'}){'YES'}else{'NO'}" % pattern)
             r = subprocess.run(["powershell", "-NoProfile", "-Command", ps],
                                capture_output=True, text=True,
                                encoding="utf-8", errors="replace", timeout=12)
