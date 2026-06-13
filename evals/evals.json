@@ -1,0 +1,23 @@
+{
+  "skill_name": "myaiweb",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我分析一下我的电脑配置，看看它在 AI 时代适合做什么。我有一台 MacBook Pro M3 Max，36GB 统一内存，2TB SSD。给我出个节点名片。",
+      "expected_output": "应输出 ASCII 节点名片 + 一个 Markdown 文件。名片应识别 Apple Silicon，角色定为 LLM 推理节点或图像生成节点，推荐 Qwen2.5 或 Llama 等 Metal 支持的模型，显示内网 IP 和 SSH 连接命令。",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "我有一台旧服务器，CPU 是 Intel Xeon E5-2670 双路（32核），128GB ECC RAM，没有独立显卡，10TB HDD，千兆网口。这台机器在我的个人 AI 网络里能干啥？给我打张卡。",
+      "expected_output": "应识别无 GPU、大内存大存储，定位为存储节点+脚本自动化节点。LLM 推理评分中等（纯 CPU 大内存可跑小模型），给出 CPU 推理和存储相关建议，ASCII 名片和 Markdown 档案正确生成。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我组了一台游戏 PC：i9-13900K，RTX 4090 24GB，64GB DDR5，2TB NVMe。我想知道这台机器在 AI 方面能做什么，生成节点档案给我。",
+      "expected_output": "RTX 4090 24GB 应被识别为顶级 LLM 推理节点，同时也适合图像生成。推荐运行 70B 量化模型和 Flux 图像生成。名片应显示 CUDA 框架，评分矩阵中 LLM 和图像生成双高分。",
+      "files": []
+    }
+  ]
+}
