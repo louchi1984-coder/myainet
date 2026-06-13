@@ -23,17 +23,7 @@ each machine that joins only needs two things:
 - **A Python interpreter (3.7+).** The scripts use syntax introduced in 3.7, so that's the floor;
   anything newer works. On Windows it's usually `python` / `py` (not necessarily `python3`) — and
   if it's missing, the skill installs it for you.
-- **An agent that can load skills** (Claude Code / codex / opencode / Claude Desktop, etc.). See install below.
-
-## Install
-
-This is a standard **Agent Skill** — a folder containing `SKILL.md` ([Agent Skills open standard](https://agentskills.io)).
-**This repo's root *is* that folder** (`SKILL.md` and `scripts/` live here). Install differs per host:
-
-- **Claude Code / codex / opencode, etc. (folder-based)** — put this repo into the agent's skills directory,
-  e.g. `~/.claude/skills/myainet/` (Claude Code) or `~/.codex/skills/myainet/` (codex).
-- **Claude Desktop / claude.ai (file upload)** — upload the packaged [`myainet.skill`](myainet.skill)
-  (a zip of the same folder); one file, done.
+- **An agent that can load skills** (Claude Code / codex / opencode / Claude Desktop, etc.).
 
 ## Setup
 
