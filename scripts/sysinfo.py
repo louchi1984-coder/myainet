@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: sysinfo.py
+myainet: sysinfo.py
 跨平台系统信息采集 (macOS / Linux / Windows)
 输出 key=value 格式，供 register_node.py 解析。
 
@@ -314,7 +314,7 @@ def _version(cmd: str) -> str:
     out = run(cmd, "--version", timeout=4)
     return out.splitlines()[0].strip()[:40] if out else "yes"
 
-# ① AI agent —— myaiweb 的头等能力：这台机能跑哪个 agent 干活
+# ① AI agent —— myainet 的头等能力：这台机能跑哪个 agent 干活
 AGENTS = ["claude", "opencode", "codex", "aider", "gemini"]
 agents_found = [f"{a}:{_version(a)}" for a in AGENTS if shutil.which(a)]
 emit("agents", ",".join(agents_found))
@@ -425,7 +425,7 @@ except Exception:
     _models = []
 emit("models", _json.dumps(_models, ensure_ascii=False))
 
-# ── 原生远程工作区（机器自报标记 ~/.myaiweb/workspace.json，若这台设过）──────────────
+# ── 原生远程工作区（机器自报标记 ~/.myainet/workspace.json，若这台设过）──────────────
 # 工作区是这台机的一项资源：自报进卡，全网（assemble/控制台/dispatch）才 read-don't-guess
 # 「这台有工作区 + 它的 OS 契约」。原生 = 就用本机 OS/python/GPU/盘，无容器。无标记则报空。
 # agent 永不猜 OS：卡里带 os/shell/work_dir/python，操作一律走 dispatch（按 os 出命令）。
@@ -448,7 +448,7 @@ def _win_ssh_shell() -> str:
 
 def _workspace():
     import json
-    marker = Path.home() / ".myaiweb" / "workspace.json"
+    marker = Path.home() / ".myainet" / "workspace.json"
     if not marker.exists():
         return None
     try:

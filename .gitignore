@@ -8,10 +8,10 @@ __pycache__/
 # 运行产物 / 每套部署各自的实例文件（跑脚本时生成，不是 skill 源码，含真实 IP/主机名，绝不提交）
 network-raw.json
 network-*.json
-myaiweb-network-config.md
-claude-windows-myaiweb-connect.md
+myainet-network-config.md
+claude-windows-myainet-connect.md
 *-pending-register.json
-~/.myaiweb/
+~/.myainet/
 
 # 打包产物
 *.skill

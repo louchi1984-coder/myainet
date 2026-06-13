@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: watch_job.py
+myainet: watch_job.py
 登记一个「已经在跑的活儿」让建网机盯着 —— 主控把跑起来的脚本/进程交给 hub 监控。
 hub 的巡检（patrol.py）会周期性检查它还活着没，把状态写进 注册中心 的 task:<name>，大屏可见。
 
@@ -91,7 +91,7 @@ def list_jobs(host, port):
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: 登记进程让建网机盯着")
+    p = argparse.ArgumentParser(description="myainet: 登记进程让建网机盯着")
     p.add_argument("--registry-host", required=True, help="主建网机 注册中心 地址")
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--node", default=None, help="活儿在哪台节点上（节点名或 IP，要和注册卡对得上）")

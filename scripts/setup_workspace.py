@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-myaiweb: setup_workspace.py
+myainet: setup_workspace.py
 把本机设成「原生工作区」—— 无容器、无 Docker：就用本机的 OS / python / GPU + 一块盘上的工作目录。
 主控可远程对节点跑它（经 SSH），全是 operate 层、没有"装运行时"那道墙。
 
 做三件事：
-  ① 定 work_dir（--dir；默认 ~/myaiweb-ws。选哪块盘，由主控读卡里 storage 决定后传进来）
+  ① 定 work_dir（--dir；默认 ~/myainet-ws。选哪块盘，由主控读卡里 storage 决定后传进来）
   ② 建目录
-  ③ 写自报标记 ~/.myaiweb/workspace.json（{kind:native, work_dir}）—— 机器据此自报进卡
+  ③ 写自报标记 ~/.myainet/workspace.json（{kind:native, work_dir}）—— 机器据此自报进卡
   ④ 可选触发 register_node 自报，让全网立刻看到这台多了工作区
 
 之后：进入 = ssh 这台 + cd work_dir；派活一律走 dispatch --workspace（按节点 os 自动 cd，agent 不手写 OS 命令）。
 
 用法：
-  python3 setup_workspace.py                                       # ~/myaiweb-ws，仅本机设好
-  python3 setup_workspace.py --dir D:\\myaiweb-ws                  # 指定盘
+  python3 setup_workspace.py                                       # ~/myainet-ws，仅本机设好
+  python3 setup_workspace.py --dir D:\\myainet-ws                  # 指定盘
   python3 setup_workspace.py --dir /data/ws --registry-host <建网机IP>   # 设好并自报进卡
 """
 from __future__ import annotations
@@ -35,13 +35,13 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     except Exception:
         pass
 
-MARKER = Path.home() / ".myaiweb" / "workspace.json"
+MARKER = Path.home() / ".myainet" / "workspace.json"
 
 
 def main():
     p = argparse.ArgumentParser(description="把本机设成原生工作区（无 Docker）")
-    p.add_argument("--dir", default=str(Path.home() / "myaiweb-ws"),
-                   help="工作目录（默认 ~/myaiweb-ws；选盘由主控读卡后传进来）")
+    p.add_argument("--dir", default=str(Path.home() / "myainet-ws"),
+                   help="工作目录（默认 ~/myainet-ws；选盘由主控读卡后传进来）")
     p.add_argument("--registry-host", default="", help="设好后触发 register_node 自报到这个注册中心")
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--node-name", default="", help="自报时的节点名（传给 register_node）")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: assemble_network.py
+myainet: assemble_network.py
 从 注册中心 读取所有节点，输出原始硬件数据 + 评分。
 角色分配由主控上运行 skill 的 AI 来判断，不在此处自动分配。
 用法：python3 assemble_network.py --registry-host 192.168.1.x
@@ -67,7 +67,7 @@ def print_raw_map(nodes: list[dict], infra: dict | None):
     W = 66
 
     print()
-    print("🌐 myaiweb 网络原始状态")
+    print("🌐 myainet 网络原始状态")
     print("━" * W)
 
     if infra:
@@ -123,7 +123,7 @@ def print_raw_map(nodes: list[dict], infra: dict | None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="myaiweb: 读取节点原始数据，供主控 skill 分配角色"
+        description="myainet: 读取节点原始数据，供主控 skill 分配角色"
     )
     parser.add_argument("--registry-host", default="127.0.0.1")
     parser.add_argument("--registry-port", type=int, default=27182)
@@ -147,7 +147,7 @@ def main():
     # 打印原始网络状态
     print_raw_map(nodes, infra)
 
-    # 保存原始数据 JSON，供 skill AI 读取后生成 myaiweb-network-config.md
+    # 保存原始数据 JSON，供 skill AI 读取后生成 myainet-network-config.md
     raw_data = {
         "infra_hostname": infra["hostname"] if infra else None,
         "nodes": nodes,
@@ -157,7 +157,7 @@ def main():
     out_path = Path(args.output)
     out_path.write_text(json.dumps(raw_data, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"📄 原始数据已保存：{out_path}")
-    print("   skill 将读取此文件，给出角色建议，等待用户确认后生成 myaiweb-network-config.md")
+    print("   skill 将读取此文件，给出角色建议，等待用户确认后生成 myainet-network-config.md")
 
 
 if __name__ == "__main__":

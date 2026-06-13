@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: keysync.py
+myainet: keysync.py
 三角色 SSH 钥匙自动化 —— 把原本手动的 `ssh-copy-id` 干掉。
 全程【本机操作自己的 authorized_keys + 读写 注册中心】，不往别人那儿推钥匙、不用任何密码。
 
@@ -88,7 +88,7 @@ def ensure_keypair():
     SSHDIR.mkdir(mode=0o700, parents=True, exist_ok=True)
     key = SSHDIR / "id_ed25519"
     subprocess.run(["ssh-keygen", "-t", "ed25519", "-N", "", "-f", str(key),
-                    "-C", f"myaiweb-{socket.gethostname()}"],
+                    "-C", f"myainet-{socket.gethostname()}"],
                    capture_output=True, text=True, timeout=30)
     return (SSHDIR / "id_ed25519.pub").read_text(encoding="utf-8", errors="replace").strip(), True
 
@@ -132,7 +132,7 @@ def install(host, port, dry):
         keytype, blob = parts[0], parts[1]
         if blob in have:
             continue                              # 已在，幂等跳过
-        to_add.append(f"{keytype} {blob} myaiweb:{src}")   # 打 myaiweb 标记，便于将来撤
+        to_add.append(f"{keytype} {blob} myainet:{src}")   # 打 myainet 标记，便于将来撤
 
     if not to_add:
         n = len([s for s in controllers if s.lower() != myhost])
@@ -172,7 +172,7 @@ def install(host, port, dry):
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: 三角色 SSH 钥匙自动化")
+    p = argparse.ArgumentParser(description="myainet: 三角色 SSH 钥匙自动化")
     p.add_argument("--registry-host", default=None, help="建网机 注册中心 地址；不给则局域网广播自动发现（hub 自己用 127.0.0.1）")
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--role", required=True, choices=["master", "hub", "node"],
@@ -198,7 +198,7 @@ def main():
                 print("❌ 没找到建网机（同局域网且在运行？跨网手填 --registry-host）", file=sys.stderr)
                 sys.exit(2)
 
-    print(f"🔑 myaiweb 钥匙同步  role={args.role}" + ("  （dry-run，不动手）" if dry else ""))
+    print(f"🔑 myainet 钥匙同步  role={args.role}" + ("  （dry-run，不动手）" if dry else ""))
 
     if args.role in ("master", "hub"):
         publine, gen = ensure_keypair()

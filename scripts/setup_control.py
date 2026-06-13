@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-myaiweb: setup_control.py
+myainet: setup_control.py
 一条命令把「主控」配好 —— 和 setup_hub 对称，确定性：每步自验、不跳步、不靠 agent 现场拼命令。
 主控 = 控制全网但不扛 infra（不起注册中心/大屏/巡检）；借建网机的注册中心 + 持本地镜像抗建网机掉线。
 

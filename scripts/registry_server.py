@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-myaiweb: registry_server.py
+myainet: registry_server.py
 零依赖注册中心 —— 把 sqlite + ThreadingTCPServer（都是标准库）用 RESP 胶水连起来，
 顶替 Valkey/Redis。建网机上跑这一个 python 进程即可：三系统原生、不用 Docker/WSL。
 
-只实现 myaiweb 真正用到的 5 条命令：SET(+EX) / GET / MGET / KEYS / DEL（外加 PING 等握手善意）。
+只实现 myainet 真正用到的 5 条命令：SET(+EX) / GET / MGET / KEYS / DEL（外加 PING 等握手善意）。
 客户端 registry_client.py 说的就是 RESP，一行不用改 —— RESP 只是线缆格式，不是 Valkey 本身。
 
 存储落 sqlite(WAL)，进程崩了/重启不丢；过期惰性滤 + 定时清扫。
 重活全甩给标准库（sqlite 管存储、ThreadingTCPServer 管连接），自己只担中间那层 RESP 胶水。
 
-用法：python3 registry_server.py [--host 0.0.0.0] [--port 27182] [--db ~/.myaiweb/registry.db]
+用法：python3 registry_server.py [--host 0.0.0.0] [--port 27182] [--db ~/.myainet/registry.db]
 自测：另开终端 python3 registry_client.py 127.0.0.1
 """
 from __future__ import annotations
@@ -152,7 +152,7 @@ def _array(items) -> bytes:
     return b"*%d\r\n" % len(items) + b"".join(_bulk(i) for i in items)
 
 
-# ── 命令分发（只认 myaiweb 用到的那几条，其余善意搪塞或 -ERR）─────────────────────
+# ── 命令分发（只认 myainet 用到的那几条，其余善意搪塞或 -ERR）─────────────────────
 def dispatch(store: Store, args: list) -> bytes:
     cmd = args[0].decode("utf-8", "replace").upper()
 
@@ -351,10 +351,10 @@ def _sync_to_main(store, main_host, main_port):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="myaiweb 零依赖注册中心（顶替 Valkey，无需 Docker）")
+    ap = argparse.ArgumentParser(description="myainet 零依赖注册中心（顶替 Valkey，无需 Docker）")
     ap.add_argument("--host", default="0.0.0.0", help="监听地址（默认全网卡，LAN+Tailscale 都够得到）")
     ap.add_argument("--port", type=int, default=27182)
-    ap.add_argument("--db", default="~/.myaiweb/registry.db")
+    ap.add_argument("--db", default="~/.myainet/registry.db")
     ap.add_argument("--main-host", default=None,
                     help="次建网机用：把本地注册中心同步给主（填主的 Tailscale 地址，或 'auto' 列 tailnet 自动探）。不填=自己是主")
     ap.add_argument("--main-port", type=int, default=None, help="主注册中心端口（默认同 --port）")
@@ -384,7 +384,7 @@ def main():
             print(f"   🔗 次建网机：同步本地注册中心 → 主 {args.main_host}:{mport}")
         except Exception:
             pass
-    print(f"📒 myaiweb 注册中心已起：{args.host}:{args.port}  db={Path(args.db).expanduser()}")
+    print(f"📒 myainet 注册中心已起：{args.host}:{args.port}  db={Path(args.db).expanduser()}")
     print("   说 RESP（SET/GET/MGET/KEYS/DEL），registry_client.py 直连，零 Valkey/Docker。Ctrl-C 退出。")
     try:
         srv.serve_forever()

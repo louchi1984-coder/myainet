@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: enable_ssh.py
+myainet: enable_ssh.py
 跨平台【自动开启 SSH 服务】(macOS / Linux / Windows)，幂等。
 节点入伙 / 建网机搭建时调用，免去手动去系统设置里开「远程登录」。
 
@@ -119,7 +119,7 @@ def enable_windows():
 
 def main():
     check_only = "--check" in sys.argv
-    print("🔌 myaiweb: 检查 SSH 服务...")
+    print("🔌 myainet: 检查 SSH 服务...")
 
     if port22_listening():
         print("✅ SSH 服务已开启（22 端口在监听），无需操作。")

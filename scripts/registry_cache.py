@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-myaiweb: registry_cache.py
+myainet: registry_cache.py
 主控的注册表本地镜像 —— 主控每次读全网时把原始节点卡存一份到本地。
 作用：① 建网机掉线时主控仍知道每台机器（配合 dispatch 回退，能直驱够得到的）；
       ② 这份镜像就是【转移时的注册表备份】（老 hub 死了也能拿它喂新 hub）。
 
-镜像：~/.myaiweb/registry-cache.json
+镜像：~/.myainet/registry-cache.json
   { "saved_at": <epoch>, "central": "<来源地址>",
     "cards": { "node:xxx": "<卡 JSON 字符串，原样>", ... } }
 
@@ -40,7 +40,7 @@ try:
 except ImportError:
     rmap = None
 
-CACHE_DIR = Path.home() / ".myaiweb"
+CACHE_DIR = Path.home() / ".myainet"
 CACHE_PATH = CACHE_DIR / "registry-cache.json"
 
 
@@ -85,7 +85,7 @@ def load_card_strings():
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: 主控注册表本地镜像（抗建网机掉线 + 转移备份）")
+    p = argparse.ArgumentParser(description="myainet: 主控注册表本地镜像（抗建网机掉线 + 转移备份）")
     p.add_argument("--registry-host", required=True, help="中央 注册中心 地址")
     p.add_argument("--registry-port", type=int, default=27182)
     args = p.parse_args()

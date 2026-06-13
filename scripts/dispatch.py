@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: dispatch.py
+myainet: dispatch.py
 派任务 —— 把主控（AI）选好的「在某台节点上跑某条命令」真正执行，并记进 注册中心 task:*。
 
 定位：它是「手」，不是「脑」。挑哪台、写什么命令、是直接 shell 还是委托给那台的 agent——
@@ -280,10 +280,10 @@ def run_detach_win(target, is_local, command, tid):
     """Windows 长任务甩后台：用计划任务(schtasks)拉起，与 SSH 会话彻底解耦。
     根因：Windows OpenSSH 断开会杀子进程树，Start-Process 的子进程活不过会话（真实事故）；
     schtasks 拉的进程归任务计划服务管，SSH 断了照活。
-    盯法：计划任务跑 myaiweb-<tid>.ps1（运行进程命令行里带这串）→ 登记 check=match:myaiweb-<tid>，
+    盯法：计划任务跑 myainet-<tid>.ps1（运行进程命令行里带这串）→ 登记 check=match:myainet-<tid>，
     patrol 用 Win32_Process.CommandLine -like 盯；跑完 .ps1 自删计划任务，不留垃圾。
     返回 (marker, '') 成功 / ('', err) 失败。"""
-    tn = f"myaiweb-{tid}"
+    tn = f"myainet-{tid}"
     # .ps1 内容整体在 Python 里拼好（日志重定向 + 跑完自删任务），再整体 base64 —— 引导只管解码写盘，少一层嵌套引号
     ps1 = (
         "& {\n" + command + "\n} *> \"$env:TEMP\\" + tn + ".log\" 2>&1\n"
@@ -309,7 +309,7 @@ def run_detach_win(target, is_local, command, tid):
     except Exception as e:
         return "", f"[起计划任务失败] {e}"
     if "OK" in (r.stdout or ""):
-        return f"myaiweb-{tid}", ""
+        return f"myainet-{tid}", ""
     return "", (r.stderr or r.stdout or "schtasks 未确认成功").strip()[:200]
 
 
@@ -327,7 +327,7 @@ def _ws_cd_prefix(shell, wd):
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: 派任务（跑 + 记 task:*）")
+    p = argparse.ArgumentParser(description="myainet: 派任务（跑 + 记 task:*）")
     p.add_argument("--registry-host", default=None,
                    help="主建网机 注册中心 地址；不填=从本机身份标记的 central 读（agent 不用每次拼）")
     p.add_argument("--registry-port", type=int, default=27182)
@@ -416,8 +416,8 @@ def main():
             print(f"✅ {hostname} = 本机（控制方自己），必然在线。")
             return
         where = f"-J {_JUMP} → {target}" if _JUMP else target
-        code, out = run_sync(target, is_local, "echo MYAIWEB_PROBE_OK", 12, win_shell=win_shell)
-        if code == 0 and "MYAIWEB_PROBE_OK" in (out or ""):
+        code, out = run_sync(target, is_local, "echo MYAINET_PROBE_OK", 12, win_shell=win_shell)
+        if code == 0 and "MYAINET_PROBE_OK" in (out or ""):
             print(f"✅ {hostname} 活着、够得到 —— 经 SSH 实连成功（{where}）。")
             print("   判据 = SSH/22 口实连，非 ICMP。ping 不通 ≠ down（Windows 防火墙默认拦 ICMP）。")
             return
@@ -468,7 +468,7 @@ def main():
     # ── 长任务：甩后台 + 交给 patrol 盯 ──────────────────────────────────────
     if args.detach:
         if is_win:
-            # Windows：schtasks 拉起，与 SSH 解耦（断开不被杀）；patrol 用 match 盯进程命令行里的 myaiweb-<tid>
+            # Windows：schtasks 拉起，与 SSH 解耦（断开不被杀）；patrol 用 match 盯进程命令行里的 myainet-<tid>
             marker, err = run_detach_win(target, is_local, command, tid)
             if not marker:
                 print(f"❌ 起后台失败：{err}")
@@ -481,7 +481,7 @@ def main():
             print(f"   ✅ 已用计划任务后台启动（{marker}，与 SSH 解耦）；日志 节点 %TEMP%\\{marker}.log")
             print(f"   建网机巡检会盯它死活；查看：watch_job.py --registry-host {H} --list")
             return
-        logpath = f"/tmp/myaiweb-{tid}.log"
+        logpath = f"/tmp/myainet-{tid}.log"
         pid, err = run_detach_posix(target, is_local, command, logpath)
         if not pid:
             print(f"❌ 起后台失败：{err}")

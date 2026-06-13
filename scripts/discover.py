@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: discover.py
+myainet: discover.py
 零依赖局域网自动发现建网机 —— 新机器不输 IP 也能找到建网机（这才叫自动组网）。
 
 机制：建网机的注册中心起一个 UDP 应答器（serve_discovery，registry_server 自动起它）；
@@ -33,7 +33,7 @@ except Exception:
     pass
 
 DISCOVERY_PORT = 27182                     # UDP（和注册中心 TCP 同号；27182=e 前五位，冷门、不撞 Redis/常见服务）
-PROBE = b"MYAIWEB_DISCOVER_HUB?"          # 探测口令；应答器只认这一句
+PROBE = b"MYAINET_DISCOVER_HUB?"          # 探测口令；应答器只认这一句
 
 
 def lan_ip() -> str:

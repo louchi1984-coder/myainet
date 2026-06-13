@@ -35,7 +35,7 @@ python3 ~/myainet/scripts/registry_client.py 127.0.0.1   # 打印「✅ 裸 sock
 > **开机自启**：注册中心 + 大屏 + 巡检是建网机的 3 个常驻进程，用同一套机制随机器起 ——
 > Linux 写 systemd 单元（`Restart=always`）、macOS 放 launchd plist、Windows 用「任务计划程序」开机触发。
 > 漏起了也不慌：`healthcheck.py` 会指出哪个没通、给补起命令。
-> 卡落在 `~/.myaiweb/registry.db`（sqlite，WAL），**进程崩了 / 重启不丢**。
+> 卡落在 `~/.myainet/registry.db`（sqlite，WAL），**进程崩了 / 重启不丢**。
 
 安装完毕后获取建网机的局域网 IP：
 ```bash

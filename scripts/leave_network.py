@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-myaiweb: leave_network.py
-退网：让本机（或指定节点）干净离开 myaiweb 网络，尽量回到入网前状态。
+myainet: leave_network.py
+退网：让本机（或指定节点）干净离开 myainet 网络，尽量回到入网前状态。
   ① 删掉它在建网机 注册中心 里的注册卡；
   ② 退出 tailnet 并停用/卸载 Tailscale（仅当装了，且只对【本机】生效）；
-  ③ 删机器级身份标记 ~/.myaiweb/identity.json（只对【本机】生效，否则下次组网还自认在老网里）；
+  ③ 删机器级身份标记 ~/.myainet/identity.json（只对【本机】生效，否则下次组网还自认在老网里）；
   ④ SSH 钥匙撤销暂时给手动提示（等"自动换钥匙"建好再自动）。
 
 用法：
@@ -91,7 +91,7 @@ def remove_identity():
     try:
         from identity import IDENTITY_PATH as ident_path
     except ImportError:
-        ident_path = Path.home() / ".myaiweb" / "identity.json"
+        ident_path = Path.home() / ".myainet" / "identity.json"
     if not ident_path.exists():
         print("   ℹ️ 本机没有身份标记（已干净）")
         return
@@ -133,7 +133,7 @@ def remove_tailscale(purge):
 
 def main():
     global DRY
-    p = argparse.ArgumentParser(description="myaiweb: 退网")
+    p = argparse.ArgumentParser(description="myainet: 退网")
     p.add_argument("--registry-host", required=True, help="建网机 注册中心 地址")
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--node-name", default=None, help="要退网的节点名（默认本机 hostname）")
@@ -145,7 +145,7 @@ def main():
 
     name = args.node_name or socket.gethostname()
     is_local = (args.node_name is None) or (args.node_name.lower() == socket.gethostname().lower())
-    print(f"🚪 myaiweb 退网：{name}" + ("  （dry-run，不动手）" if DRY else ""))
+    print(f"🚪 myainet 退网：{name}" + ("  （dry-run，不动手）" if DRY else ""))
 
     print("① 删注册卡")
     remove_card(args.registry_host, args.registry_port, name)
@@ -165,12 +165,12 @@ def main():
         remove_identity()
     else:
         # 安全闸：退别人的节点时绝不碰本机身份
-        print(f"   ℹ️ {name} 不是本机——它的 ~/.myaiweb/identity.json 要在它自己上面清。")
+        print(f"   ℹ️ {name} 不是本机——它的 ~/.myainet/identity.json 要在它自己上面清。")
 
     print("④ SSH 钥匙")
     print("   ℹ️ 装钥匙已自动（keysync.py）；撤钥匙半自动：")
     print("      · 退的是控制方(建网机) → 从 注册中心 删 pubkey:<它的hostname>，新节点就不会再装它；")
-    print("      · 各机器 authorized_keys 里 keysync 装的行带 `myaiweb:` 标记，要彻底清就 grep 这个删掉。")
+    print("      · 各机器 authorized_keys 里 keysync 装的行带 `myainet:` 标记，要彻底清就 grep 这个删掉。")
 
     print("\n完成。" + ("（以上为 dry-run 预览，未动手）" if DRY else f"  {name} 已退网。"))
 

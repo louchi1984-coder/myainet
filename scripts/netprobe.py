@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: netprobe.py
+myainet: netprobe.py
 探测本机所在网络的"远程可达性画像"，输出网络分类 + 推荐的远程接入方案。
 把手动那套探测固化下来：公网 v4（是否 CGNAT）、公网 v6、NAT 类型（是否对称）、
 是否蜂窝、墙内/墙外，据此给出该走哪条远程接入路线。
@@ -36,7 +36,7 @@ _OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
 def http_json(url, timeout=6):
-    req = urllib.request.Request(url, headers={"User-Agent": "myaiweb-netprobe/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "myainet-netprobe/1.0"})
     with _OPENER.open(req, timeout=timeout) as r:
         return json.loads(r.read().decode("utf-8", "replace"))
 
@@ -255,7 +255,7 @@ def main():
 
     # ── 人类可读 ──
     print()
-    print("╔══════════════════ myaiweb 网络画像 ══════════════════")
+    print("╔══════════════════ myainet 网络画像 ══════════════════")
     print(f"║  出口 IPv4   : {ext_v4 or '?'}  ({intel['isp'] or '?'})")
     print(f"║  是否 CGNAT  : {'是（无公网入站）' if cgnat_v4 else '否'}")
     print(f"║  公网 IPv6   : {v6 + ('  可达' if v6_reach else '  不可达') if v6 else '无'}")

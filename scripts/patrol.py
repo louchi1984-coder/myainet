@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: patrol.py
+myainet: patrol.py
 巡检推送 —— 在「次建网机」上跑：ping 本 LAN 够得着的节点，把在线状态 push 到主建网机的 注册中心。
 
 为什么需要它：主建网机 ping 不到别的 LAN 的私网 IP（192.168.x），所以别的 LAN 里
@@ -286,8 +286,8 @@ def refresh_nodes(reachable, local_ids, hub_lan_ip, host, port):
         target = _ssh_target(card)
         if not target:
             continue
-        # 节点上 skill 脚本的真实目录从卡读（注册时自报）；老卡没有就退回 ~/myaiweb（向后兼容）
-        sdir = card.get("scripts_dir") or "~/myaiweb/scripts"
+        # 节点上 skill 脚本的真实目录从卡读（注册时自报）；老卡没有就退回 ~/myainet（向后兼容）
+        sdir = card.get("scripts_dir") or "~/myainet/scripts"
         reg = f'"{sdir}/register_node.py" --registry-host {hub_lan_ip} --node-name {hostname}'
         cmd = f"python {reg} || python3 {reg}"   # python||python3 兜 Win/posix
         ssh_cmd = ["ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=8",
@@ -347,7 +347,7 @@ def sweep(host, port, hub, ttl):
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: 建网机巡检推送（主/单局域网那台跑）")
+    p = argparse.ArgumentParser(description="myainet: 建网机巡检推送（主/单局域网那台跑）")
     p.add_argument("--registry-host", required=True, help="本机 注册中心 地址（主/单局域网那台填 127.0.0.1）")
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--interval", type=int, default=30, help="多少秒推一次（默认 30）")
@@ -361,7 +361,7 @@ def main():
     # 状态键活得比一个周期长，几次漏推不闪断；最终靠 dashboard 端的新鲜度判离线。
     ttl = max(args.interval * 5, 120)
 
-    print(f"🩺 myaiweb 巡检推送 → 注册中心 {args.registry_host}:{args.registry_port}  hub={hub}  "
+    print(f"🩺 myainet 巡检推送 → 注册中心 {args.registry_host}:{args.registry_port}  hub={hub}  "
           f"每 {args.interval}s{'（单次）' if args.once else ''}")
 
     hub_lan = _lan_ip()

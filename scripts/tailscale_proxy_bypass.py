@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-myaiweb: tailscale_proxy_bypass.py
+myainet: tailscale_proxy_bypass.py
 Add Tailscale ranges to system proxy bypass domains.
 
 This is intentionally idempotent: running it multiple times keeps existing
-rules and only appends missing myaiweb/Tailscale bypass entries.
+rules and only appends missing myainet/Tailscale bypass entries.
 """
 
 import platform
@@ -90,7 +90,7 @@ def update_macos_service(service: str) -> tuple[bool, list[str]]:
 def configure_macos() -> int:
     services = list_macos_services()
     if not services:
-        print("myaiweb: 未发现可配置的网络服务。")
+        print("myainet: 未发现可配置的网络服务。")
         return 0
 
     any_changed = False
@@ -104,9 +104,9 @@ def configure_macos() -> int:
             print(f"warn: {service}: {exc}", file=sys.stderr)
 
     if any_changed:
-        print("myaiweb: 已加入 Tailscale 代理绕过规则。")
+        print("myainet: 已加入 Tailscale 代理绕过规则。")
     else:
-        print("myaiweb: Tailscale 代理绕过规则已存在。")
+        print("myainet: Tailscale 代理绕过规则已存在。")
     return 0
 
 
@@ -148,7 +148,7 @@ def main() -> int:
     if system == "Windows":
         return configure_windows()
 
-    print("myaiweb: 当前系统没有统一的系统代理绕过接口，请在代理软件中加入 100.64.0.0/10 DIRECT。")
+    print("myainet: 当前系统没有统一的系统代理绕过接口，请在代理软件中加入 100.64.0.0/10 DIRECT。")
     return 0
 
 

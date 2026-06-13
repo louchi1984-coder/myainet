@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: report.py
+myainet: report.py
 agent 汇报（监控模式②）—— 让 agent 主动往看板写一条【带判断】的话。
 机器写"还活着没"（patrol 写事实），agent 写"发生了啥、好不好、要不要管"（这个，写判断）。
 
@@ -40,7 +40,7 @@ except ImportError:
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: agent 汇报（往看板写一条 note）")
+    p = argparse.ArgumentParser(description="myainet: agent 汇报（往看板写一条 note）")
     p.add_argument("--registry-host", required=True, help="主建网机 注册中心 地址")
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--node", default=None, help="跟哪台节点有关（可选，默认本机）")

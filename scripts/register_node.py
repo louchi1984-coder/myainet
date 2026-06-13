@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: register_node.py
+myainet: register_node.py
 将节点卡写入 注册中心。默认长期保存；显式传 --ttl 时才注册为临时节点。
 用法：python3 register_node.py --registry-host 192.168.1.x
 """
@@ -117,7 +117,7 @@ def build_node_card(info: dict, node_name: str = None, role: str = "",
         "models":    models,    # 本地大模型（运行时无关：ollama / LM Studio / HF 缓存）
         "workspace": workspace, # 原生远程工作区（自报标记 → OS 契约 os/shell/work_dir/python/gpu）；全网据此知道这台有工作区，dispatch --workspace 进去派活。无=null
         "python":    info.get("python", ""),   # 这台机器自报的 Python 解释器路径。跨平台调它上面的脚本读这个，别猜 python/python3
-        "scripts_dir": str(Path(__file__).resolve().parent),  # 这台机器上 skill 脚本的真实目录（装在哪自报）；patrol 远程刷新卡时用它，不假设 ~/myaiweb
+        "scripts_dir": str(Path(__file__).resolve().parent),  # 这台机器上 skill 脚本的真实目录（装在哪自报）；patrol 远程刷新卡时用它，不假设 ~/myainet
         "always_on":     always_on,
         "reach_claude":  info.get("net_reach_anthropic", "?"),  # 能否访问 Claude API（墙内外）
         "link":          link or {},  # 层3 网速：外网底子(net_class/cellular/nat/isp)+带宽，【建网机自测】；节点空=继承 belongs_to 那台的
@@ -160,7 +160,7 @@ def print_ascii_card(card: dict):
         return f"║{content:{fill}<{W}}║"
 
     print("╔" + "═" * W + "╗")
-    print(f"║{'  myaiweb NODE CARD':<{W}}║")
+    print(f"║{'  myainet NODE CARD':<{W}}║")
     print("╠" + "═" * W + "╣")
     print(line(f"Node     : {card['hostname']}"))
     print(line(f"Role     : {card['primary_role']}"))
@@ -207,7 +207,7 @@ def measure_bandwidth(url=DEFAULT_SPEED_URL, max_seconds=8):
     t0 = time.time()
     got = 0
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "myaiweb"})
+        req = urllib.request.Request(url, headers={"User-Agent": "myainet"})
         with opener.open(req, timeout=12) as r:
             while True:
                 b = r.read(65536)
@@ -253,7 +253,7 @@ def measure_link(script_dir, speed_url=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="myaiweb: 注册节点到 注册中心")
+    parser = argparse.ArgumentParser(description="myainet: 注册节点到 注册中心")
     parser.add_argument("--registry-host", default=None, help="建网机 注册中心 地址；不给则局域网广播自动发现（建网机自己用 127.0.0.1）")
     parser.add_argument("--registry-port", type=int, default=27182)
     parser.add_argument("--ttl", type=int, default=0, help="临时节点有效期（秒）；默认 0 表示长期保存")
@@ -347,9 +347,9 @@ def main():
         ok = write_to_registry(card, args.registry_host, args.registry_port, ttl)
         if ok:
             if ttl:
-                print(f"✅ 临时节点 {card['hostname']} 已注册到 myaiweb，TTL {ttl}s")
+                print(f"✅ 临时节点 {card['hostname']} 已注册到 myainet，TTL {ttl}s")
             else:
-                print(f"✅ 节点 {card['hostname']} 已注册到 myaiweb（长期保存）")
+                print(f"✅ 节点 {card['hostname']} 已注册到 myainet（长期保存）")
             print(f"   刷新命令：{sys.executable} {__file__} --registry-host {args.registry_host} --node-name {card['hostname']}")
             # 写机器级身份标记：注册成功 = 认得自己（名 + 归属 + 中央）；
             # patrol 重注册时只带 --registry-host，所以 central 会自愈 —— 转移建网机后节点自然指向新家。

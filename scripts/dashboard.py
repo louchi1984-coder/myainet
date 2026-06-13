@@ -3,7 +3,7 @@
 # 注：本文件 HTML 模板里有超长 JS 单行 + 中文，缺 coding 声明时旧版 tokenizer 会按缓冲区
 # 分块校验 UTF-8、在多字节字符边界处报「Non-UTF-8 code」。声明编码后走增量解码，跨边界安全。
 """
-myaiweb: dashboard.py
+myainet: dashboard.py
 在建网机上启动 myainet 网络状态仪表盘（HTTP 服务），iPad/浏览器均可访问。
 
 用法：
@@ -107,7 +107,7 @@ def _agent_command(agent: str, exe: str, workdir: Path) -> list[str]:
     return [exe, "run", "--dir", str(workdir)]   # opencode run 无参也读 stdin
 
 
-CONSOLE_STATE = Path.home() / ".myaiweb" / "console.json"
+CONSOLE_STATE = Path.home() / ".myainet" / "console.json"
 
 
 def _host_agent() -> str | None:
@@ -121,7 +121,7 @@ def _host_agent() -> str | None:
 
 
 def _preferred_agent() -> str | None:
-    """上次真答成功的 agent 优先（~/.myaiweb/console.json）；没记录就看 skill 装在谁家。"""
+    """上次真答成功的 agent 优先（~/.myainet/console.json）；没记录就看 skill 装在谁家。"""
     try:
         return json.loads(CONSOLE_STATE.read_text(encoding="utf-8")).get("agent") or _host_agent()
     except Exception:
@@ -663,7 +663,7 @@ const I18N={
   loc:'local',across:n=>`across ${n}`,m_total:'total',bad:n=>`${n} unavailable`,topo_hint:'drag to arrange · click a node → details',topo_wait:'waiting for registry',
   hub_signal:'HUB SIGNAL',waiting:'WAITING',no_signal:'NO SIGNAL',proc:'running on hub… (agent cold start ~10–60s)',
   pending:'processing on hub...'}};
-let LANG=localStorage.getItem('myaiweb-lang')||((navigator.language||'en').toLowerCase().startsWith('zh')?'zh':'en');
+let LANG=localStorage.getItem('myainet-lang')||((navigator.language||'en').toLowerCase().startsWith('zh')?'zh':'en');
 function t(k,a){const v=(I18N[LANG]||I18N.en)[k];return typeof v==='function'?v(a):(v??k);}
 function applyStaticI18n(){document.documentElement.lang=LANG;
  const S=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt;};
@@ -672,7 +672,7 @@ function applyStaticI18n(){document.documentElement.lang=LANG;
  const ph=document.getElementById('agent-message');if(ph)ph.placeholder=t('cmd_ph');
  S('cmd-hint',t('cmd_hint'));S('lang-btn',LANG==='zh'?'EN':'中');S('cmd-ready',t('cmd_ready'));
  const rl=document.getElementById('last-refresh');if(rl&&/NO SIGNAL|无信号/.test(rl.textContent))rl.textContent=t('no_signal');}
-function setLang(l){LANG=l;localStorage.setItem('myaiweb-lang',l);window._mSig=window._actSig='';lastTopoSig='';applyStaticI18n();if(window._lastData)render(window._lastData);}
+function setLang(l){LANG=l;localStorage.setItem('myainet-lang',l);window._mSig=window._actSig='';lastTopoSig='';applyStaticI18n();if(window._lastData)render(window._lastData);}
 function escapeHTML(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmtTime(ts){if(!ts)return'--:--:--';return new Date(ts*1000).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 function tick(){var d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});var ds=document.getElementById('datestamp');if(ds)ds.textContent='M'+String(d.getMonth()+1).padStart(2,'0')+'.D'+String(d.getDate()).padStart(2,'0')+'.Y'+String(d.getFullYear()).slice(2);}setInterval(tick,1000);tick();
@@ -891,7 +891,7 @@ def _pid_running(pid: int) -> bool:
 
 
 def acquire_dashboard_lock(port: int) -> Path:
-    lock_path = Path(tempfile.gettempdir()) / f"myaiweb-dashboard-{port}.pid"
+    lock_path = Path(tempfile.gettempdir()) / f"myainet-dashboard-{port}.pid"
     while True:
         try:
             fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)

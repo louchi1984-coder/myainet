@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: transfer_role.py
+myainet: transfer_role.py
 建网机职能转移（搬家）—— 把「监听 + 写大屏」这份常驻职责 + 注册表数据从老机搬到新机。
 控制能力本来就是共享的（主控 / 其它控制机都能控），所以转的只是 infra 那份活，不是"权力"。
 
@@ -98,7 +98,7 @@ def migrate_from_mirror(new_host, new_port, dry):
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: 建网机职能转移（搬注册表 + 清单）")
+    p = argparse.ArgumentParser(description="myainet: 建网机职能转移（搬注册表 + 清单）")
     p.add_argument("--old-host", default="", help="老建网机 注册中心 地址（够不到就自动改用主控镜像）")
     p.add_argument("--old-port", type=int, default=27182)
     p.add_argument("--new-host", required=True, help="新建网机 注册中心 地址（须已装好 注册中心 + 上 Tailscale + 绑 0.0.0.0）")
@@ -121,7 +121,7 @@ def main():
     old_up = reachable(args.old_host, args.old_port)
     use_mirror = args.from_mirror or not old_up
 
-    print(f"🚚 myaiweb 建网机转移 → {H_new}" + ("  （dry-run，不写）" if dry else ""))
+    print(f"🚚 myainet 建网机转移 → {H_new}" + ("  （dry-run，不写）" if dry else ""))
 
     if use_mirror:
         if args.from_mirror:

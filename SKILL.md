@@ -82,7 +82,7 @@ python --version || python3 --version || py -3 --version || py --version
 
 ## 第一步：自动检测状态（机器级身份，不绑目录）
 
-加载就跑这一句——它读机器级身份标记 `~/.myaiweb/identity.json` ＋ 查本机注册中心(27182)在不在，打印 facts：
+加载就跑这一句——它读机器级身份标记 `~/.myainet/identity.json` ＋ 查本机注册中心(27182)在不在，打印 facts：
 
 ```bash
 python3 ~/myainet/scripts/identity.py
@@ -112,7 +112,7 @@ python3 ~/myainet/scripts/setup_hub.py --verify     # 逐项核：注册中心 /
   2. **主控** — 你日常用的电脑：控制全网（借建网机注册中心 + 持本地镜像，抗掉线）
   3. **节点** — 加入网络成为工作节点（被控）
 
-  > **老主控迁移**：若 `role=未知` 但当前目录有 `myaiweb-network-config.md`——这是标记机制之前建的老主控，当主控处理，并顺手补写标记 `identity.py --set --role 主控 --central <配置里的建网机地址>`。
+  > **老主控迁移**：若 `role=未知` 但当前目录有 `myainet-network-config.md`——这是标记机制之前建的老主控，当主控处理，并顺手补写标记 `identity.py --set --role 主控 --central <配置里的建网机地址>`。
 
 ---
 
@@ -364,14 +364,14 @@ nohup python3 ~/myainet/scripts/patrol.py --registry-host 127.0.0.1 > ~/patrol.l
 
 **流程**（三系统同形，路径 / shell 不同由 `dispatch` 兜）：
 
-**① 选盘** — 读那台卡的 `hardware.disks`（每块盘 `{mount, total_gb, avail_gb}`，sysinfo 自报：Win 列盘符、posix 列真实挂载），挑 **`avail_gb` 最大那块** 定 `work_dir`（别默认系统盘）。例：win 的 D: 空 160G ≫ C: → `--dir D:\myaiweb-ws`。
+**① 选盘** — 读那台卡的 `hardware.disks`（每块盘 `{mount, total_gb, avail_gb}`，sysinfo 自报：Win 列盘符、posix 列真实挂载），挑 **`avail_gb` 最大那块** 定 `work_dir`（别默认系统盘）。例：win 的 D: 空 160G ≫ C: → `--dir D:\myainet-ws`。
 
 **② 一句话部署**（主控远程对节点跑，operate 层、零运行时安装）：
 ```bash
 ssh <节点> "<卡里的 python> ~/myainet/scripts/setup_workspace.py \
   --dir <选好的盘路径> --registry-host <建网机IP> --node-name <节点名>"
 ```
-它干三件：建 `work_dir` → 写自报标记 `~/.myaiweb/workspace.json` → 触发 `register_node` 自报进卡。**一条命令、远程、无墙。**
+它干三件：建 `work_dir` → 写自报标记 `~/.myainet/workspace.json` → 触发 `register_node` 自报进卡。**一条命令、远程、无墙。**
 
 > **跨 LAN 节点**（主控直接够不到它）：把 `ssh <节点>` 换成 `ssh -J <它的建网机> <节点>`，或直接在它的建网机上跑（同〈控制模式〉的 `belongs_to` 路由，**别直连外地节点**）。
 
@@ -399,7 +399,7 @@ ssh <节点> "<卡里的 python> ~/myainet/scripts/setup_workspace.py \
 
 **注意**
 - **数据安全**：`work_dir` 是盘上真实目录，**没有容器可删、天然不丢**。
-- **拆工作区**：删节点的标记 `~/.myaiweb/workspace.json`（要的话连 `work_dir` 一起删）+ 重注册 → 卡里 `workspace` 变 `null`，全网即知它不再是工作区。
+- **拆工作区**：删节点的标记 `~/.myainet/workspace.json`（要的话连 `work_dir` 一起删）+ 重注册 → 卡里 `workspace` 变 `null`，全网即知它不再是工作区。
 - **原生即那台的环境**：Win 工作区是 PowerShell + Windows 路径、Mac/Linux 是 bash/zsh —— 正因如此，③「读契约 + 走 `dispatch`」不是建议、是前提。
 - **连通抖动**：走 Tailscale DERP 中继时 `ssh <别名>` 偶尔超时，重试即可（不是真断）。
 
@@ -754,7 +754,7 @@ python scripts/assemble_network.py \
 
 ### Step 4 生成 myainet 网络配置
 
-用户确认角色分配后，生成 `myaiweb-network-config.md`，保存在主控当前目录：
+用户确认角色分配后，生成 `myainet-network-config.md`，保存在主控当前目录：
 
 ```
 # myainet 网络配置
@@ -792,7 +792,7 @@ ssh -J <user>@<建网IP> <user>@<节点IP> "命令"
 ```
 
 生成后告知用户：
-- 将 `myaiweb-network-config.md` 内容粘贴进任意 AI 工具的 system prompt，即可让该 AI 直接调度网络
+- 将 `myainet-network-config.md` 内容粘贴进任意 AI 工具的 system prompt，即可让该 AI 直接调度网络
 - 下次运行此 skill 时会自动读取此文件，可直接下命令控制各台机器
 
 ---
@@ -844,11 +844,11 @@ ssh -J <user>@<建网IP> <user>@<节点IP> "命令"
 脚本都在 `scripts/` 下平铺，按职责分四组：
 
 **核心 / 共用**
-- `registry_server.py` — **零依赖注册中心**（顶替 Valkey/Redis）：sqlite + 标准库 RESP server，监听 27182。建网机跑这一个 python 进程即可，**三系统原生、免装、无 Docker/WSL**；卡落 `~/.myaiweb/registry.db`（WAL，崩了/重启不丢），只实现 myainet 用到的 SET(+EX)/GET/MGET/KEYS/DEL
+- `registry_server.py` — **零依赖注册中心**（顶替 Valkey/Redis）：sqlite + 标准库 RESP server，监听 27182。建网机跑这一个 python 进程即可，**三系统原生、免装、无 Docker/WSL**；卡落 `~/.myainet/registry.db`（WAL，崩了/重启不丢），只实现 myainet 用到的 SET(+EX)/GET/MGET/KEYS/DEL
 - `registry_client.py` — 零依赖注册中心客户端（裸 socket 说 RESP，瞬断自动重连一次）；全项目读写注册中心都走它，节点**无需装任何东西**。连的就是 `registry_server.py`（RESP 只是线缆格式、不是 Valkey/Redis）
 - `sysinfo.py` — 采集本机硬件 + 实装 agent/工具（Python，三平台通用）；远程采集 `ssh USER@HOST python3 - < sysinfo.py`
-- `identity.py` — **机器级身份标记** `~/.myaiweb/identity.json`（role / central / name / belongs_to）。skill「第一步」跑它判身份（建网机 / 主控 / 次 / 节点 / 新机器）——**身份机器级、不绑目录**；标记优先、本机注册中心(27182)在则兜底判建网机。各路径结束 `--set` 写一笔
-- `registry_cache.py` — **主控注册表本地镜像** `~/.myaiweb/registry-cache.json`。主控读全网时存一份原始卡；**建网机掉线**时 dispatch 回退它、直驱够得到的机器，也是**转移备份**（读不到不覆盖，保住上次的好镜像）
+- `identity.py` — **机器级身份标记** `~/.myainet/identity.json`（role / central / name / belongs_to）。skill「第一步」跑它判身份（建网机 / 主控 / 次 / 节点 / 新机器）——**身份机器级、不绑目录**；标记优先、本机注册中心(27182)在则兜底判建网机。各路径结束 `--set` 写一笔
+- `registry_cache.py` — **主控注册表本地镜像** `~/.myainet/registry-cache.json`。主控读全网时存一份原始卡；**建网机掉线**时 dispatch 回退它、直驱够得到的机器，也是**转移备份**（读不到不覆盖，保住上次的好镜像）
 
 **建网 / 接入**
 - `setup_hub.py` — **（一键建建网机，建网主入口）** 确定性依次：起注册中心 → 写身份 → 开 SSH → 起大屏+巡检 → 注册本机 → 装 Tailscale，**每步自验、结尾如实报告**（缺一就不报成功、退出码非 0）；**幂等**可反复跑（已起的跳过、缺的补）。`--verify` 只逐项核不动手；`--skip-ssh` 跳过开 SSH。**建网就跑这一个，别手动逐步拼**（根治 agent 漏步 / 写错 OS 命令）
@@ -866,7 +866,7 @@ ssh -J <user>@<建网IP> <user>@<节点IP> "命令"
 - `patrol.py` — 巡检循环（常驻）：① 探活本 LAN 报在线（ping+SSH口兜底）、多局域网时推 `status:*` 给主；② 盯登记在册的进程、更新 `task:*`（posix + Windows 都支持）；③ `--refresh-every`（默认 ≈1 小时）周期触发本 LAN 节点重注册、刷新卡（防卡烂；节点照旧被动）；④ **每轮自动补装控制方公钥**（注册中心里新出现的 `pubkey:*` 下一轮就装进本机门，幂等——主控晚于建网机入伙也不用手跑 keysync，组网不挑顺序）
 - `watch_job.py` — 登记 / 列出 / 撤销「让建网机盯一个在跑的进程」（写 `task:*`，由 patrol 查死活）
 - `dispatch.py` — **（主控派任务，编排④的第一块）** 在某节点跑一条命令（本机 / SSH，posix + Windows）→ 写 `task:*`（running→done/failed + 退出码 + 输出尾部）→ 回显；`--detach` 长任务交巡检盯；`--workspace` 在节点工作区 `work_dir` 里跑（读卡按 `os` 自动 cd，agent 不手写跨 OS 路径）。判断（挑机器 / shell 还是委托 agent）在主控 AI，dispatch 只执行；**建网机掉线时 resolve 自动回退主控本地镜像**（命令照跑、任务记账缺）。**人体工学**：`--registry-host` 不填=从本机 identity 的 central 读；`--node` 支持模糊（机名子串 / 硬件型号如 `2070` / `gpu` 关键词，多台报歧义）；`--delegate "目标"`=委托模式（按卡自动挑 codex/claude/opencode 包非交互调用）；**`--check`=判节点死活（经 SSH 实连，唯一权威方式，别用 ping）**
-- `setup_workspace.py` — **（把节点设成原生工作区）** 主控远程对节点跑：在选好的盘建 `work_dir` + 写自报标记 `~/.myaiweb/workspace.json` + 触发 register 自报 OS 契约进卡（**无容器、无 Docker**）；之后 `dispatch --workspace` 派活进去
+- `setup_workspace.py` — **（把节点设成原生工作区）** 主控远程对节点跑：在选好的盘建 `work_dir` + 写自报标记 `~/.myainet/workspace.json` + 触发 register 自报 OS 契约进卡（**无容器、无 Docker**）；之后 `dispatch --workspace` 派活进去
 - `report.py` — **（agent 汇报，监控模式②）** agent 主动往看板写一条**带判断**的 note（写 `task:*` status=note，大屏灰底可见）。机器写"还活着"（patrol），agent 写"发生了啥 / 好不好 / 要不要管"
 - `healthcheck.py` — **（建网机自检）** 本地查 注册中心 / Dashboard / Patrol / Tailscale 在不在、挂的给启动命令（跨平台）；skill 认出建网机时先跑它
 - `keysync.py` — **（SSH 换钥匙的共享逻辑，通常由 `register_node` 注册时 + patrol 自动调用，不单独跑）** 发布本机公钥 + 把控制方公钥装进本机门；全本机操作 `authorized_keys` + 注册中心 发布/拉取，**零密码、幂等、不覆盖你原有钥匙**。Windows 管理员账号**自动**写进 `administrators_authorized_keys` 并设好 ACL（用内置 SID，中文系统也对）

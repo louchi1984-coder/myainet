@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: healthcheck.py
+myainet: healthcheck.py
 建网机自检 —— 看自己几个常驻服务还活着没。在建网机上本地跑（skill 认出建网机时自动跑）。
 只查本机，不碰别的机器：注册中心 / Dashboard / Patrol / Tailscale，各报 ✅/❌/❓，挂的给启动命令。
 （重启机器后大屏/巡检最容易没自启，所以再启动 skill 时顺手自检一下。）
@@ -80,7 +80,7 @@ def main():
     pt = proc_running("patrol.py")
     ts = tailscale_ok()
 
-    # 启动命令提示按【本脚本真实所在目录 + 当前解释器】拼，不写死 ~/myaiweb 或 python3——
+    # 启动命令提示按【本脚本真实所在目录 + 当前解释器】拼，不写死 ~/myainet 或 python3——
     # 这样无论 skill 装在哪、Python 叫 python/py/python3，复制粘贴都对（陌生人 clone 到任意目录也准）。
     _here = Path(__file__).resolve().parent
     _py = sys.executable or "python3"

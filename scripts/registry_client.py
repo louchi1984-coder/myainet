@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: registry_client.py
+myainet: registry_client.py
 零依赖注册中心客户端：裸 socket 说 RESP，连 registry_server.py（或任何 RESP 服务）。
 只要标准库 —— 全新机器 / 便携版 Python 都能读写注册中心。
 
@@ -155,8 +155,8 @@ if __name__ == "__main__":
     if not reachable(h, p):       # 先分清「够不着」vs「空」——直接发命令会被静默吞成空，看不出是连不上
         print(f"❌ 连不上 {h}:{p} —— 不是「注册表空」，是够不着。检查：地址/端口对不对、建网机注册中心在不在跑。")
         sys.exit(2)
-    ok = rset(h, p, "myaiweb:selftest", "hello-中文-myaiweb")
-    got = rget(h, p, "myaiweb:selftest")
-    rdel(h, p, "myaiweb:selftest")
+    ok = rset(h, p, "myainet:selftest", "hello-中文-myainet")
+    got = rget(h, p, "myainet:selftest")
+    rdel(h, p, "myainet:selftest")
     print(f"  SET ok={ok}   GET={got!r}")
-    print("✅ 裸 socket RESP 通了，零依赖可用" if ok and got == "hello-中文-myaiweb" else "❌ 没通")
+    print("✅ 裸 socket RESP 通了，零依赖可用" if ok and got == "hello-中文-myainet" else "❌ 没通")

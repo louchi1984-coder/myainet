@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-myaiweb: identity.py
+myainet: identity.py
 机器级身份标记 —— 把"这台是谁"从【当前目录有没有 config.md】挪到【机器级文件】，
 让 skill 在任何目录加载都认得自己（身份不再绑目录）。
 
-标记：~/.myaiweb/identity.json
+标记：~/.myainet/identity.json
   { "role": "建网机|主控|次建网机|节点",
     "central": "<中央 注册中心 / 主建网机地址；建网机=自己，节点/主控/次填它>",
     "name": "<本机名>",
@@ -43,7 +43,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
     except Exception:
         pass
 
-IDENTITY_DIR = Path.home() / ".myaiweb"
+IDENTITY_DIR = Path.home() / ".myainet"
 IDENTITY_PATH = IDENTITY_DIR / "identity.json"
 
 
@@ -131,7 +131,7 @@ def detect():
 
 
 def main():
-    p = argparse.ArgumentParser(description="myaiweb: 机器级身份标记（读 / 写 / 判定）")
+    p = argparse.ArgumentParser(description="myainet: 机器级身份标记（读 / 写 / 判定）")
     p.add_argument("--set", action="store_true", help="写标记（配合 --role 等）")
     p.add_argument("--role", default=None, help="建网机 / 主控 / 次建网机 / 节点")
     p.add_argument("--central", default=None, help="中央 注册中心 / 主建网机地址")

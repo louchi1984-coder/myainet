@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-myaiweb: setup_hub.py
+myainet: setup_hub.py
 一条命令把「建网机」建起来 —— 确定性：不靠 agent 现场拼命令、不跳步、每步自己验。
 能脚本化的全做完：起注册中心 → 写身份 → 开 SSH → 起 dashboard + patrol → 注册自己 → 自检。
 Tailscale：脚本帮你下载 + 装（过个管理员授权），只有「登你自己的账号」（开浏览器）那一下要你来。
@@ -84,9 +84,9 @@ def _lan_ip() -> str:
 
 
 def _dash_url():
-    """大屏地址：dashboard 启动时把端口写在 tempdir/myaiweb-dashboard-<port>.pid，读它即知。"""
+    """大屏地址：dashboard 启动时把端口写在 tempdir/myainet-dashboard-<port>.pid，读它即知。"""
     import glob, re, tempfile
-    for f in glob.glob(str(Path(tempfile.gettempdir()) / "myaiweb-dashboard-*.pid")):
+    for f in glob.glob(str(Path(tempfile.gettempdir()) / "myainet-dashboard-*.pid")):
         m = re.search(r"dashboard-(\d+)\.pid$", f)
         if m and _port_up("127.0.0.1", int(m.group(1)), tries=1):
             return f"http://{_lan_ip()}:{m.group(1)}"
@@ -130,7 +130,7 @@ def _ensure_win_firewall(rules, dry: bool = False) -> None:
 
 def _fw_rules(P, sec):
     """要开的入站口：注册中心端口；主建网机再加大屏的自动选口段（dashboard.find_free_port 7700-7799）。"""
-    return [("myaiweb-registry", str(P))] + ([] if sec else [("myaiweb-dashboard", "7700-7799")])
+    return [("myainet-registry", str(P))] + ([] if sec else [("myainet-dashboard", "7700-7799")])
 
 
 def _ts_exe():
