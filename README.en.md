@@ -1,4 +1,4 @@
-# myaiweb
+# myainet
 
 [中文](README.md) · **English**
 
@@ -6,9 +6,9 @@
 
 > 把你自己的多台机器组成一张个人自动化 AI 网络，让 AI agent 跨机器统一调度。
 
-![myaiweb dashboard](docs/dashboard.png)
+![myainet dashboard](docs/dashboard.png)
 
-myaiweb is an **agent skill**. It turns your own machines into a single **personal automation AI
+myainet is an **agent skill**. It turns your own machines into a single **personal automation AI
 network**: each machine plays its part, and your agent (Claude Code / codex / opencode) dispatches
 work across all of them — run inference on the box with a GPU, keep a service alive on the
 always-on box, control the whole fleet even when you're away. They're all *your* machines:
@@ -23,7 +23,7 @@ each machine that joins only needs two things:
 - **A Python interpreter (3.7+).** The scripts use syntax introduced in 3.7, so that's the floor;
   anything newer works. On Windows it's usually `python` / `py` (not necessarily `python3`) — and
   if it's missing, the skill installs it for you.
-- **An agent that can load skills** (Claude Code / codex / opencode, etc.). Install myaiweb into it
+- **An agent that can load skills** (Claude Code / codex / opencode, etc.). Install myainet into it
   the way you install any skill (no manual file copying).
 
 ## Setup

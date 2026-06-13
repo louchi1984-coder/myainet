@@ -4,7 +4,7 @@
 # 分块校验 UTF-8、在多字节字符边界处报「Non-UTF-8 code」。声明编码后走增量解码，跨边界安全。
 """
 myaiweb: dashboard.py
-在建网机上启动 myaiweb 网络状态仪表盘（HTTP 服务），iPad/浏览器均可访问。
+在建网机上启动 myainet 网络状态仪表盘（HTTP 服务），iPad/浏览器均可访问。
 
 用法：
   python3 dashboard.py --registry-host 127.0.0.1
@@ -153,7 +153,7 @@ def local_agents() -> list[tuple[str, str]]:
 def _chat_context(message: str, history: list | None) -> str:
     """拼单轮提示词：身份 + 通道约束 + 最近几轮历史（agent 进程无状态，记忆只能靠这里带）。"""
     lines = [
-        "你是 myaiweb 个人 AI 网络的建网机助手，通过大屏 Console 接收浏览器/手机发来的消息。",
+        "你是 myainet 个人 AI 网络的建网机助手，通过大屏 Console 接收浏览器/手机发来的消息。",
         "这是单轮非交互调用：你无法追问、也等不到用户确认。直接给出答案或结果；",
         "涉及删除、重装、清理、改配置等破坏性操作时不要执行，回复说明该操作请用户在终端人工跑。",
         "请用中文简洁回答。",
@@ -457,7 +457,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MYAIWEB Control Surface</title>
+<title>MYAINET Control Surface</title>
 <style>
   :root{
     --bg:#020303;--ink:#e9f0ef;--muted:#7c8582;--dim:#3e4744;--line:#1f2926;
@@ -589,13 +589,13 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <body>
 <div class="page">
   <header class="hero">
-    <div class="title">MYAIWEB<sup>®</sup></div>
+    <div class="title">MYAINET<sup>®</sup></div>
     <div class="meta">
       <p>PERSONAL AI NETWORK CONTROL SURFACE</p>
       <div class="meta-grid">
         <span><span class="muted">HUB:</span> <span id="location-name">--</span></span>
         <span><span class="muted">SCOPE:</span> <span id="mode-id">--</span></span>
-        <span><span class="muted">ENGINE:</span> myaiweb 2.0</span>
+        <span><span class="muted">ENGINE:</span> myainet 2.0</span>
         <span><span class="muted">STATUS:</span> <span id="vk-status"><span class="status-dot off"></span> WAITING</span></span>
       </div>
     </div>
@@ -634,7 +634,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
       <section class="panel">
         <div class="panel-head"><span>Command</span><span id="agent-name" class="section-note">adaptive agent</span></div>
-        <div id="agent-log" class="log"><div class="msg sys"><div class="msg-meta">myaiweb</div><span id="cmd-ready">Command surface ready. 直接提问，或下任务给建网机 agent。</span></div></div>
+        <div id="agent-log" class="log"><div class="msg sys"><div class="msg-meta">myainet</div><span id="cmd-ready">Command surface ready. 直接提问，或下任务给建网机 agent。</span></div></div>
         <div class="command">
           <textarea id="agent-message" class="cmd-input" placeholder="> 问网络状态 / 派任务 / 自然语言都行"></textarea>
           <div class="cmd-actions"><div id="cmd-hint" class="cmd-hint">Enter 发送 · Shift+Enter 换行 · hub agent: codex / claude / opencode</div><button id="agent-send" class="send" onclick="sendAgentMessage()">Send</button></div>
@@ -1017,7 +1017,7 @@ def _auto_register_loop(registry_host: str, registry_port: int, interval: int = 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="myaiweb Dashboard Server")
+    parser = argparse.ArgumentParser(description="myainet Dashboard Server")
     parser.add_argument("--registry-host", default="127.0.0.1", help="注册中心 地址（默认 127.0.0.1）")
     parser.add_argument("--registry-port", type=int, default=27182)
     parser.add_argument("--port", type=int, default=0,
@@ -1035,7 +1035,7 @@ def main():
 
     print()
     print("╔══════════════════════════════════════════╗")
-    print("║       myaiweb Dashboard Server           ║")
+    print("║       myainet Dashboard Server           ║")
     print("╠══════════════════════════════════════════╣")
     print(f"║  注册中心  : {args.registry_host}:{args.registry_port:<27}║")
     print(f"║  Port    : {port:<30}║")

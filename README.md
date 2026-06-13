@@ -1,4 +1,4 @@
-# myaiweb
+# myainet
 
 **中文** · [English](README.en.md)
 
@@ -7,9 +7,9 @@
 > A **personal automation AI network**: give your AI coding agent a fleet — dispatch tasks
 > across all your own machines (Windows / macOS / Linux), not just the one it runs on.
 
-![myaiweb 大屏](docs/dashboard.png)
+![myainet 大屏](docs/dashboard.png)
 
-myaiweb 是一个 **agent skill**，把你自己的多台机器组成一张**个人自动化 AI 网络**：各机器各司其职，
+myainet 是一个 **agent skill**，把你自己的多台机器组成一张**个人自动化 AI 网络**：各机器各司其职，
 你的 agent（Claude Code / codex / opencode）跨机器统一调度——在有显卡的机器上跑推理，在常驻机上挂服务，
 人在外面也能控全网。全是你自己的机器、你自己说了算，不上云、不分享、不遥测。
 
@@ -21,7 +21,7 @@ myaiweb 是一个 **agent skill**，把你自己的多台机器组成一张**个
 - **一个 Python 解释器（3.7+）**。脚本用了 3.7 起才有的写法，所以这是底线；新一点都行。
   Windows 上解释器通常叫 `python` / `py`（不一定有 `python3`），没装也没关系——skill 会自动帮你装好。
 - **一个能加载 skill 的 agent**（Claude Code / codex / opencode 等），在它里面像装任何 skill
-  一样装上 myaiweb（不用手动拷目录）。
+  一样装上 myainet（不用手动拷目录）。
 
 ## 搭建
 
