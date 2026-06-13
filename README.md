@@ -1,5 +1,7 @@
 # myaiweb
 
+**中文** · [English](README.en.md)
+
 **一张个人自动化 AI 网络 —— 让你的 AI agent 调度你所有的机器，而不只是它所在的那一台。**
 
 > A **personal automation AI network**: give your AI coding agent a fleet — dispatch tasks
