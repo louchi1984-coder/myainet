@@ -27,12 +27,13 @@ each machine that joins only needs two things:
 
 ## Install
 
-Download [`myainet.skill`](myainet.skill) from this repo (the whole skill, packaged into one file with the
-scripts inside):
+This is a standard **Agent Skill** — a folder containing `SKILL.md` ([Agent Skills open standard](https://agentskills.io)).
+**This repo's root *is* that folder** (`SKILL.md` and `scripts/` live here). Install differs per host:
 
-- **Claude Desktop** — install that file directly in Claude Desktop.
-- **Claude Code / codex / opencode, etc.** — `.skill` is just a zip; unzip it into a `myainet/` folder
-  (`SKILL.md` and `scripts/` inside) and drop that into the agent's skills directory.
+- **Claude Code / codex / opencode, etc. (folder-based)** — put this repo into the agent's skills directory,
+  e.g. `~/.claude/skills/myainet/` (Claude Code) or `~/.codex/skills/myainet/` (codex).
+- **Claude Desktop / claude.ai (file upload)** — upload the packaged [`myainet.skill`](myainet.skill)
+  (a zip of the same folder); one file, done.
 
 ## Setup
 
