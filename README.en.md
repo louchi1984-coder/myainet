@@ -23,8 +23,14 @@ each machine that joins only needs two things:
 - **A Python interpreter (3.7+).** The scripts use syntax introduced in 3.7, so that's the floor;
   anything newer works. On Windows it's usually `python` / `py` (not necessarily `python3`) — and
   if it's missing, the skill installs it for you.
-- **An agent that can load skills** (Claude Code / codex / opencode, etc.). Install myainet into it
-  the way you install any skill (no manual file copying).
+- **An agent that can load skills** (Claude Code / codex / opencode / Claude Desktop, etc.). See install below.
+
+## Install
+
+- **Claude Desktop** — download [`myainet.skill`](myainet.skill) from this repo and install that single
+  file in Claude Desktop; the scripts ship inside the package.
+- **Claude Code / codex / opencode, etc.** — drop this repo's contents into the agent's skills directory
+  (`SKILL.md` at the root, next to `scripts/`), or install it however that agent installs skills.
 
 ## Setup
 

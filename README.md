@@ -20,8 +20,14 @@ myainet 是一个 **agent skill**，把你自己的多台机器组成一张**个
 
 - **一个 Python 解释器（3.7+）**。脚本用了 3.7 起才有的写法，所以这是底线；新一点都行。
   Windows 上解释器通常叫 `python` / `py`（不一定有 `python3`），没装也没关系——skill 会自动帮你装好。
-- **一个能加载 skill 的 agent**（Claude Code / codex / opencode 等），在它里面像装任何 skill
-  一样装上 myainet（不用手动拷目录）。
+- **一个能加载 skill 的 agent**（Claude Code / codex / opencode / Claude Desktop 等）。装法见下。
+
+## 安装
+
+- **Claude Desktop** —— 下载本仓库的 [`myainet.skill`](myainet.skill)，在 Claude Desktop 里装这一个文件即可
+  （脚本都打包在里面）。
+- **Claude Code / codex / opencode 等** —— 把本仓库内容放进该 agent 的 skills 目录（`SKILL.md` 在根，
+  和 `scripts/` 同级），或按你这个 agent 装 skill 的常规方式装。
 
 ## 搭建
 
