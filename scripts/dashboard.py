@@ -715,7 +715,7 @@ function gb(v){if(!v)return'--';return v>=1024?`${Math.round(v/102.4)/10}T`:`${M
 function asList(v){if(Array.isArray(v))return v.map(String);if(v&&typeof v==='object')return Object.keys(v).filter(k=>v[k]);if(typeof v==='string')return v.split(/[,\s]+/).filter(Boolean);return[];}
 function hw(n,k){return (n.hardware&&n.hardware[k])||'';}
 function mdl(n){var a=Array.isArray(n.models)?n.models:[];return a.map(function(m){return (m&&typeof m==='object')?{name:m.name||'',ok:m.ok!==false}:{name:String(m),ok:true};}).filter(function(m){return m.name;});}
-function storageGB(n){var ds=hw(n,'disks');if(Array.isArray(ds)&&ds.length){var to=0,av=0;ds.forEach(function(d){to+=parseFloat(d.total_gb)||0;av+=parseFloat(d.avail_gb)||0;});if(to)return {total:to,used:Math.max(0,to-av)};}var s=hw(n,'storage')||'';var m=s.match(/([\d.]+)\s*\/\s*([\d.]+)/);if(m){var av2=parseFloat(m[1])||0,to2=parseFloat(m[2])||0;return {total:to2,used:Math.max(0,to2-av2)};}return {total:toGB(hw(n,'disk_total')||hw(n,'disk')),used:toGB(hw(n,'disk_used'))};}
+function storageGB(n){var ds=hw(n,'disks');if(Array.isArray(ds)&&ds.length){var to=0,av=0,seen={};ds.forEach(function(d){var t=parseFloat(d.total_gb)||0,a=parseFloat(d.avail_gb)||0,k=t+'|'+a;if(seen[k])return;seen[k]=1;to+=t;av+=a;});if(to)return {total:to,used:Math.max(0,to-av),n:Object.keys(seen).length};}var s=hw(n,'storage')||'';var m=s.match(/([\d.]+)\s*\/\s*([\d.]+)/);if(m){var av2=parseFloat(m[1])||0,to2=parseFloat(m[2])||0;return {total:to2,used:Math.max(0,to2-av2)};}return {total:toGB(hw(n,'disk_total')||hw(n,'disk')),used:toGB(hw(n,'disk_used'))};}
 function isControl(n){return /主控|control/i.test((n.primary_role||'')+' '+(n.hostname||''));}
 function isHub(n){return /建网|hub|engine/i.test(n.primary_role||'');}   // 只认角色：候选(is_infra_candidate)≠现任，曾让新节点抢走 C 位
 function roleName(s){return String(s||'').replace(/^[^一-龥A-Za-z0-9]+/,'').replace(' 节点','').trim()||'NODE';}
@@ -724,7 +724,7 @@ const ROLE_EN=[['次建网机','Secondary Hub'],['建网机','Hub'],['主控','C
 function roleDisp(s){let r=roleName(s);if(LANG==='en'){for(const[zh,en]of ROLE_EN)r=r.split(zh).join(en);}return r;}
 function specLine(n){const cpu=hw(n,'cpu')||'CPU';const ram=hw(n,'ram')||hw(n,'memory')||(hw(n,'ram_gb')?hw(n,'ram_gb')+'GB':'')||'RAM';const gpu=hw(n,'gpu')||'NO GPU';const vram=hw(n,'vram')||'';
 // 硬盘走 disks 求和（和 Storage 指标一致）——别退到 storage 摘要串，那串只含 C: 盘，多盘机会漏掉 D:/E:
-const ds=hw(n,'disks');let disk;if(Array.isArray(ds)&&ds.length){const sg=storageGB(n);disk=`${gb(sg.used)}/${gb(sg.total)}${ds.length>1?` (${ds.length}${t('disk_unit')})`:''}`;}else{disk=hw(n,'disk')||hw(n,'disk_total')||hw(n,'storage')||'DISK';}
+const ds=hw(n,'disks');let disk;if(Array.isArray(ds)&&ds.length){const sg=storageGB(n);disk=`${gb(sg.used)}/${gb(sg.total)}${sg.n>1?` (${sg.n}${t('disk_unit')})`:''}`;}else{disk=hw(n,'disk')||hw(n,'disk_total')||hw(n,'storage')||'DISK';}
 return `${cpu} · ${ram} · ${gpu}${vram?'/'+vram:''} · ${disk}`;}
 function wsLine(n){const w=n.workspace;if(!w)return'';const st=w.state||{};const bits=['✓ '+(w.work_dir||'?')];if(w.shell)bits.push(w.shell);if(st.disk)bits.push('盘 '+st.disk);if(st.gpu)bits.push('GPU '+st.gpu);return bits.join(' · ');}
 function shortName(s){return String(s||'').replace(/\.local$/i,'');}
