@@ -110,6 +110,18 @@ def _agent_command(agent: str, exe: str, workdir: Path) -> list[str]:
 CONSOLE_STATE = Path.home() / ".myainet" / "console.json"
 
 
+def _system_lang() -> str:
+    """读建网机系统 locale 定大屏默认页语言：中文→zh，其余→en。
+    （只是默认；用户在页面右上角手切后记 localStorage，下次按手选的来。）"""
+    import locale
+    try:
+        loc = locale.getdefaultlocale()[0] or ""
+    except Exception:
+        loc = ""
+    val = (loc or os.environ.get("LC_ALL") or os.environ.get("LANG") or "").lower()
+    return "zh" if ("zh" in val or "chinese" in val) else "en"
+
+
 def _host_agent() -> str | None:
     """skill 装在谁家，谁就是这台机器实测能跑的 agent（装下本 skill 的那位）。
     如 ~/.config/opencode/skills/... → opencode；~/.claude/skills/... → claude。"""
@@ -680,7 +692,7 @@ const I18N={
   loc:'local',across:n=>`across ${n}`,m_total:'total',bad:n=>`${n} unavailable`,topo_hint:'drag to arrange · click a node → details',topo_wait:'waiting for registry',
   hub_signal:'HUB SIGNAL',waiting:'WAITING',no_signal:'NO SIGNAL',proc:'running on hub… (agent cold start ~10–60s)',
   pending:'processing on hub...'}};
-let LANG=localStorage.getItem('myainet-lang')||((navigator.language||'en').toLowerCase().startsWith('zh')?'zh':'en');
+let LANG=localStorage.getItem('myainet-lang')||'__SYS_LANG__';
 function t(k,a){const v=(I18N[LANG]||I18N.en)[k];return typeof v==='function'?v(a):(v??k);}
 function applyStaticI18n(){document.documentElement.lang=LANG;
  const S=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt;};
@@ -809,7 +821,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?", 1)[0]
         if path in ("/", "/index.html"):
-            self._send(200, "text/html; charset=utf-8", HTML_TEMPLATE.encode())
+            self._send(200, "text/html; charset=utf-8",
+                       HTML_TEMPLATE.replace("__SYS_LANG__", _system_lang()).encode())
         elif path == "/api/status":
             try:
                 data = get_status(self.server.registry_host, self.server.registry_port)
