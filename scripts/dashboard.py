@@ -150,28 +150,45 @@ def local_agents() -> list[tuple[str, str]]:
     return found
 
 
-def _chat_context(message: str, history: list | None) -> str:
-    """拼单轮提示词：身份 + 通道约束 + 最近几轮历史（agent 进程无状态，记忆只能靠这里带）。"""
-    lines = [
-        "你是 myainet 个人 AI 网络的建网机助手，通过大屏 Console 接收浏览器/手机发来的消息。",
-        "这是单轮非交互调用：你无法追问、也等不到用户确认。直接给出答案或结果；",
-        "涉及删除、重装、清理、改配置等破坏性操作时不要执行，回复说明该操作请用户在终端人工跑。",
-        "请用中文简洁回答。",
-        "",
-    ]
+def _chat_context(message: str, history: list | None, lang: str = "zh") -> str:
+    """拼单轮提示词：身份 + 通道约束 + 最近几轮历史（agent 进程无状态，记忆只能靠这里带）。
+    lang 跟大屏当前语言走——英文用户必须英文回，别永远中文（这是大屏 i18n 的一部分）。"""
+    en = str(lang).lower().startswith("en")
+    if en:
+        lines = [
+            "You are the hub assistant of the myainet personal AI network, receiving messages "
+            "from a browser/phone through the dashboard Console.",
+            "This is a single-shot, non-interactive call: you cannot ask follow-ups or wait for "
+            "confirmation. Give the answer or result directly;",
+            "for destructive actions (delete, reinstall, cleanup, config changes) do NOT execute — "
+            "reply that the user should run it manually in a terminal.",
+            "Reply concisely in English.",
+            "",
+        ]
+    else:
+        lines = [
+            "你是 myainet 个人 AI 网络的建网机助手，通过大屏 Console 接收浏览器/手机发来的消息。",
+            "这是单轮非交互调用：你无法追问、也等不到用户确认。直接给出答案或结果；",
+            "涉及删除、重装、清理、改配置等破坏性操作时不要执行，回复说明该操作请用户在终端人工跑。",
+            "请用中文简洁回答。",
+            "",
+        ]
     turns = [t for t in (history or []) if isinstance(t, dict) and t.get("text")][-8:]
     if turns:
-        lines.append("最近的对话（供延续上下文）：")
+        lines.append("Recent conversation (for context):" if en else "最近的对话（供延续上下文）：")
         for t in turns:
-            who = "用户" if t.get("role") == "user" else "你"
+            if en:
+                who = "User" if t.get("role") == "user" else "You"
+            else:
+                who = "用户" if t.get("role") == "user" else "你"
             lines.append(f"[{who}] {str(t['text'])[:1000]}")
         lines.append("")
-    lines.append(f"用户本条消息：\n{message}")
+    lines.append((f"User message:\n{message}") if en else (f"用户本条消息：\n{message}"))
     return "\n".join(lines)
 
 
 def run_agent_chat(message: str, history: list | None = None,
-                   cwd: str | None = None, timeout: int = 300) -> dict:
+                   cwd: str | None = None, timeout: int = 300, lang: str = "zh") -> dict:
     """把 Console 消息桥接到建网机本地可用 agent；失败自动换下一个（codex→claude→opencode）。"""
     message = (message or "").strip()
     if not message:
@@ -186,7 +203,7 @@ def run_agent_chat(message: str, history: list | None = None,
     if not workdir.exists() or not workdir.is_dir():
         return {"ok": False, "error": f"工作目录不存在：{workdir}"}
 
-    context = _chat_context(message, history)
+    context = _chat_context(message, history, lang)
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
     env["PYTHONUTF8"] = "1"
@@ -611,7 +628,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="metric"><div class="metric-label">GPU / VRAM</div><div id="m-gpu" class="metric-value">--</div></div>
     <div class="metric"><div class="metric-label">Agents</div><div id="m-agents" class="metric-value">--</div></div>
     <div class="metric"><div class="metric-label" id="m-models-l">本地大模型</div><div id="m-models" class="metric-value">--</div></div>
-    <div class="metric"><div class="metric-label" id="m-tasks-l">Tasks 活跃</div><div id="m-tasks" class="metric-value">--</div></div>
+    <div class="metric"><div class="metric-label" id="m-tasks-l">活跃任务</div><div id="m-tasks" class="metric-value">--</div></div>
     <div class="metric"><div class="metric-label">Storage</div><div id="m-storage" class="metric-value">--</div></div>
   </section>
 
@@ -634,7 +651,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
       <section class="panel">
         <div class="panel-head"><span>Command</span><span id="agent-name" class="section-note">adaptive agent</span></div>
-        <div id="agent-log" class="log"><div class="msg sys"><div class="msg-meta">myainet</div><span id="cmd-ready">Command surface ready. 直接提问，或下任务给建网机 agent。</span></div></div>
+        <div id="agent-log" class="log"><div class="msg sys"><div class="msg-meta">myainet</div><span id="cmd-ready">命令台就绪。直接提问，或把任务派给建网机 agent。</span></div></div>
         <div class="command">
           <textarea id="agent-message" class="cmd-input" placeholder="> 问网络状态 / 派任务 / 自然语言都行"></textarea>
           <div class="cmd-actions"><div id="cmd-hint" class="cmd-hint">Enter 发送 · Shift+Enter 换行 · hub agent: codex / claude / opencode</div><button id="agent-send" class="send" onclick="sendAgentMessage()">Send</button></div>
@@ -647,15 +664,15 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <script>
 // ── i18n：大屏中英切换（零依赖；默认跟浏览器语言，可手动切、记 localStorage）──
 const I18N={
- zh:{m_models:'本地大模型',m_tasks:'Tasks 活跃',leg_hub:'建网机',leg_control:'主控',leg_node:'节点',leg_agent:'agent',
-  cmd_ready:'Command surface ready. 直接提问，或下任务给建网机 agent。',cmd_ph:'> 问网络状态 / 派任务 / 自然语言都行',
-  cmd_hint:'Enter 发送 · Shift+Enter 换行 · hub agent: codex / claude / opencode',cmd_running:'Running',cmd_send:'Send',
+ zh:{m_models:'本地大模型',m_tasks:'活跃任务',leg_hub:'建网机',leg_control:'主控',leg_node:'节点',leg_agent:'agent',disk_unit:'盘',
+  cmd_ready:'命令台就绪。直接提问，或把任务派给建网机 agent。',cmd_ph:'> 问网络状态 / 派任务 / 自然语言都行',
+  cmd_hint:'Enter 发送 · Shift+Enter 换行 · hub agent: codex / claude / opencode',cmd_running:'运行中',cmd_send:'发送',
   online:'在线',offline:'离线',reg_remote:'已注册（远程·未探活）',via:'经',local_llm:'本地大模型',unavailable:'不可用',
   no_llm:'无本地大模型',workspace:'工作区',no_active:'No active tasks',done_hidden:n=>`${n} 已完成/过期(已隐藏)`,
   loc:'本机',across:n=>`跨 ${n} 台`,m_total:'总',bad:n=>`${n} 不可用`,topo_hint:'拖动排布 · 点节点看详情',topo_wait:'等待注册中心',
-  hub_signal:'HUB SIGNAL',waiting:'WAITING',no_signal:'NO SIGNAL',proc:'正在建网机上跑…（agent 冷启动通常 10–60s）',
-  pending:'processing on hub...'},
- en:{m_models:'Local LLMs',m_tasks:'Tasks',leg_hub:'Hub',leg_control:'Control',leg_node:'Node',leg_agent:'agent',
+  hub_signal:'中枢信号',waiting:'等待中',no_signal:'无信号',proc:'正在建网机上跑…（agent 冷启动通常 10–60s）',
+  pending:'建网机处理中…'},
+ en:{m_models:'Local LLMs',m_tasks:'Tasks',leg_hub:'Hub',leg_control:'Control',leg_node:'Node',leg_agent:'agent',disk_unit:' disks',
   cmd_ready:'Command surface ready. Ask anything, or dispatch a task to the hub agent.',cmd_ph:'> ask status / dispatch a task / natural language',
   cmd_hint:'Enter to send · Shift+Enter newline · hub agent: codex / claude / opencode',cmd_running:'Running',cmd_send:'Send',
   online:'online',offline:'offline',reg_remote:'registered (remote·unprobed)',via:'via',local_llm:'Local LLMs',unavailable:'unavailable',
@@ -691,7 +708,7 @@ const ROLE_EN=[['次建网机','Secondary Hub'],['建网机','Hub'],['主控','C
 function roleDisp(s){let r=roleName(s);if(LANG==='en'){for(const[zh,en]of ROLE_EN)r=r.split(zh).join(en);}return r;}
 function specLine(n){const cpu=hw(n,'cpu')||'CPU';const ram=hw(n,'ram')||hw(n,'memory')||(hw(n,'ram_gb')?hw(n,'ram_gb')+'GB':'')||'RAM';const gpu=hw(n,'gpu')||'NO GPU';const vram=hw(n,'vram')||'';
 // 硬盘走 disks 求和（和 Storage 指标一致）——别退到 storage 摘要串，那串只含 C: 盘，多盘机会漏掉 D:/E:
-const ds=hw(n,'disks');let disk;if(Array.isArray(ds)&&ds.length){const sg=storageGB(n);disk=`${gb(sg.used)}/${gb(sg.total)}${ds.length>1?` (${ds.length}盘)`:''}`;}else{disk=hw(n,'disk')||hw(n,'disk_total')||hw(n,'storage')||'DISK';}
+const ds=hw(n,'disks');let disk;if(Array.isArray(ds)&&ds.length){const sg=storageGB(n);disk=`${gb(sg.used)}/${gb(sg.total)}${ds.length>1?` (${ds.length}${t('disk_unit')})`:''}`;}else{disk=hw(n,'disk')||hw(n,'disk_total')||hw(n,'storage')||'DISK';}
 return `${cpu} · ${ram} · ${gpu}${vram?'/'+vram:''} · ${disk}`;}
 function wsLine(n){const w=n.workspace;if(!w)return'';const st=w.state||{};const bits=['✓ '+(w.work_dir||'?')];if(w.shell)bits.push(w.shell);if(st.disk)bits.push('盘 '+st.disk);if(st.gpu)bits.push('GPU '+st.gpu);return bits.join(' · ');}
 function shortName(s){return String(s||'').replace(/\.local$/i,'');}
@@ -752,7 +769,7 @@ function typeMsg(title,body){const log=document.getElementById('agent-log');cons
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){span.textContent=body;log.scrollTop=log.scrollHeight;return;}
 let i=0;const n=Math.max(2,Math.ceil(body.length/140));const tick=()=>{i=Math.min(body.length,i+n);span.textContent=body.slice(0,i);log.scrollTop=log.scrollHeight;if(i<body.length)requestAnimationFrame(tick);};tick();}
 const chatHist=[];
-async function sendAgentMessage(){const input=document.getElementById('agent-message');const btn=document.getElementById('agent-send');const message=input.value.trim();if(!message||btn.disabled)return;addAgentMsg('user','❯ you',message);input.value='';btn.disabled=true;btn.textContent=t('cmd_running');input.classList.add('busy');const pending=addAgentMsg('agent pending','hub',t('proc'));try{const res=await fetch('/api/agent/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,history:chatHist.slice(-8)})});const data=await res.json();pending.remove();if(!res.ok||!data.ok){addAgentMsg('err','agent error',data.error||`HTTP ${res.status}`);}else{document.getElementById('agent-name').textContent=data.agent||'agent';typeMsg(`${data.agent||'agent'} · ${Math.round((data.duration_ms||0)/1000)}s`,data.output||'(no output)');chatHist.push({role:'user',text:message},{role:'agent',text:(data.output||'').slice(0,2000)});if(chatHist.length>16)chatHist.splice(0,chatHist.length-16);}}catch(e){pending.remove();addAgentMsg('err','console error',e.message);}finally{btn.disabled=false;btn.textContent=t('cmd_send');input.classList.remove('busy');input.focus();}}
+async function sendAgentMessage(){const input=document.getElementById('agent-message');const btn=document.getElementById('agent-send');const message=input.value.trim();if(!message||btn.disabled)return;addAgentMsg('user','❯ you',message);input.value='';btn.disabled=true;btn.textContent=t('cmd_running');input.classList.add('busy');const pending=addAgentMsg('agent pending','hub',t('proc'));try{const res=await fetch('/api/agent/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,history:chatHist.slice(-8),lang:LANG})});const data=await res.json();pending.remove();if(!res.ok||!data.ok){addAgentMsg('err','agent error',data.error||`HTTP ${res.status}`);}else{document.getElementById('agent-name').textContent=data.agent||'agent';typeMsg(`${data.agent||'agent'} · ${Math.round((data.duration_ms||0)/1000)}s`,data.output||'(no output)');chatHist.push({role:'user',text:message},{role:'agent',text:(data.output||'').slice(0,2000)});if(chatHist.length>16)chatHist.splice(0,chatHist.length-16);}}catch(e){pending.remove();addAgentMsg('err','console error',e.message);}finally{btn.disabled=false;btn.textContent=t('cmd_send');input.classList.remove('busy');input.focus();}}
 document.addEventListener('DOMContentLoaded',()=>{const ta=document.getElementById('agent-message');if(ta)ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAgentMessage();}});});
 let refreshing=false;async function doRefresh(){if(refreshing)return;refreshing=true;try{const res=await fetch('/api/status');if(!res.ok)throw new Error(`HTTP ${res.status}`);render(await res.json());}catch(e){renderError('NO SIGNAL');}finally{refreshing=false;}}
 applyStaticI18n();doRefresh();setInterval(doRefresh,30000);
@@ -818,6 +835,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     history=payload.get("history") or None,
                     cwd=payload.get("cwd") or None,
                     timeout=int(payload.get("timeout", 300) or 300),
+                    lang=payload.get("lang") or "zh",
                 )
                 status = 200 if data.get("ok") else 500
                 body = json.dumps(data, ensure_ascii=False).encode()
