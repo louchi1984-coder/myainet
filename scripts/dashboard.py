@@ -487,12 +487,15 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>MYAINET Control Surface</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700;1,800;1,900&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#020303;--ink:#e9f0ef;--muted:#7c8582;--dim:#3e4744;--line:#1f2926;
     --panel:#070909;--green:#66f5ad;--red:#ff5161;--amber:#e6c46d;--paper:#dce6e3;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  *,*::before,*::after{font-family:'Montserrat',ui-sans-serif,system-ui,sans-serif!important}
   body{min-height:100vh;background:
     linear-gradient(rgba(102,245,173,.04) 1px,transparent 1px),
     linear-gradient(90deg,rgba(102,245,173,.04) 1px,transparent 1px),var(--bg);
