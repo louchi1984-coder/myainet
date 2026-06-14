@@ -500,7 +500,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   button,textarea{font:inherit}
   .page{height:100vh;padding:14px clamp(14px,1.6vw,28px) 16px;display:flex;flex-direction:column;gap:13px;overflow:hidden}
   .hero{display:flex;align-items:center;gap:30px;border-bottom:1px solid var(--line);padding-bottom:12px;flex:none}
-  .title{font-family:Impact,"Arial Black","Avenir Next Condensed",sans-serif;font-size:clamp(38px,4.6vw,62px);font-weight:900;line-height:.84;letter-spacing:-.02em;color:var(--paper);white-space:nowrap;text-transform:uppercase}
+  .title{font-family:Impact,"Arial Black","Avenir Next Condensed",sans-serif;font-size:clamp(38px,4.6vw,62px);font-weight:900;font-style:italic;line-height:.84;letter-spacing:-.02em;color:var(--paper);white-space:nowrap}
   .title sup{font-size:.18em;vertical-align:top;margin-left:6px;font-family:"SF Mono",Consolas,monospace;letter-spacing:0}
   .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;font:700 11px/1.3 "SF Mono",Consolas,monospace;text-transform:uppercase;color:var(--ink)}
   .meta p{color:var(--muted);letter-spacing:.16em;font-size:10px}.meta .muted{color:var(--muted)}.meta-grid{display:flex;flex-wrap:wrap;gap:7px 26px;align-items:center}.meta-grid>span{white-space:nowrap}
@@ -522,6 +522,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   @keyframes gridmove{to{background-position:32px 32px,32px 32px}}
   .title{background:linear-gradient(105deg,var(--paper) 42%,#fff 50%,var(--paper) 58%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shine 9s ease-in-out infinite}
   .title sup{-webkit-text-fill-color:var(--paper)}
+  .title .ai{-webkit-text-fill-color:#ff5161;color:#ff5161}
   @keyframes shine{0%,55%{background-position:120% 0}90%,100%{background-position:-40% 0}}
   .status-dot:not(.off){animation:dotpulse 2.4s ease-in-out infinite}
   @keyframes dotpulse{50%{box-shadow:0 0 22px rgba(102,245,173,1)}}
@@ -618,7 +619,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <body>
 <div class="page">
   <header class="hero">
-    <div class="title">MYAINET<sup>®</sup></div>
+    <div class="title">My<span class="ai">AI</span>net</div>
     <div class="meta">
       <p>PERSONAL AI NETWORK CONTROL SURFACE</p>
       <div class="meta-grid">
