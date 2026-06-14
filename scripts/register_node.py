@@ -122,6 +122,7 @@ def build_node_card(info: dict, node_name: str = None, role: str = "",
         "reach_claude":  info.get("net_reach_anthropic", "?"),  # 能否访问 Claude API（墙内外）
         "link":          link or {},  # 层3 网速：外网底子(net_class/cellular/nat/isp)+带宽，【建网机自测】；节点空=继承 belongs_to 那台的
         "problems":      problems,    # 卡住任务的待解决项（从事实 derive，re-register 刷新；AI 评估可补角色相关的）。任务路由前先看它、能解决先解决
+        "notes":         [],          # agent 自由便签：装了啥非-LLM 能力(TTS/SD/数字人/向量库) / 实测最优配置 / 踩过的坑。sysinfo 不采、由 agent 写(report.py --card)；write_to_registry 每次重注册都从注册中心读出已有的带上、不冲掉。别的任务读卡即知，不重复试错
         "network":       network,
         "registered_at": int(time.time()),
     }
@@ -131,13 +132,22 @@ def write_to_registry(card: dict, host: str, port: int, ttl: int | None = None) 
     """将节点卡写入注册中心。零依赖裸 socket RESP（见 registry_client）。
     全失败也不丢卡——暂存本地，建网机 注册中心 起来后重跑本命令即可补注册。"""
     key = f"node:{card['hostname']}"
-    value = json.dumps(card, ensure_ascii=False)
-
     sys.path.insert(0, str(Path(__file__).parent))
     try:
-        from registry_client import rset
+        from registry_client import rset, rget
     except ImportError:
-        rset = None
+        rset = rget = None
+
+    # 保住 agent 便签：notes 不是 sysinfo 采的，是 agent 装/调/发现后写进卡的（report.py --card）。
+    # 每次重注册（patrol 每小时刷卡也走这）都从注册中心读出已有 notes 带上，否则当场被新卡冲掉。
+    if rget:
+        try:
+            prev = json.loads(rget(host, port, key) or "{}")
+            if isinstance(prev, dict) and prev.get("notes"):
+                card["notes"] = prev["notes"]
+        except Exception:
+            pass
+    value = json.dumps(card, ensure_ascii=False)
 
     if rset and rset(host, port, key, value, ttl):
         return True

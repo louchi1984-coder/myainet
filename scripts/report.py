@@ -33,7 +33,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 
 sys.path.insert(0, str(Path(__file__).parent))
 try:
-    from registry_client import rset
+    from registry_client import rset, rget
 except ImportError:
     print("❌ 找不到 registry_client.py，无法连接 注册中心", file=sys.stderr)
     sys.exit(1)
@@ -45,6 +45,8 @@ def main():
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--node", default=None, help="跟哪台节点有关（可选，默认本机）")
     p.add_argument("--warn", action="store_true", help="标为警告（话前面加 ⚠️）")
+    p.add_argument("--card", action="store_true",
+                   help="durable：把这条钉到那台节点的卡上（notes）——装了非-LLM 能力 / 实测最优配置 / 踩过的坑写这，别的任务读卡即知，不重复试错。（不加=只写流水 task:*，大屏看得见但不挂卡）")
     p.add_argument("message", help="要汇报的话（整体加引号）")
     args = p.parse_args()
 
@@ -63,10 +65,32 @@ def main():
         "started_at":  now,
         "source":      "report",    # task:* 三种来源（dispatch/watch/report）之一
     }
-    if rset(args.registry_host, args.registry_port, f"task:{tid}", json.dumps(rec, ensure_ascii=False)):
+    ok = rset(args.registry_host, args.registry_port, f"task:{tid}", json.dumps(rec, ensure_ascii=False))
+    if ok:
         print(f"📝 已汇报：{msg}   （node={node}，task:{tid}，大屏任务栏可见）")
     else:
-        print("⚠️ 写入失败：连不上主建网机 注册中心。")
+        print("⚠️ 写入失败：连不上主建网机 注册中心。", file=sys.stderr)
+
+    # --card：durable 钉到那台节点的卡（notes）。读出卡 → 追加 → 写回（保留 register 重建时会带上的，见 register_node.write_to_registry）
+    if args.card:
+        nkey = f"node:{node}"
+        try:
+            ncard = json.loads(rget(args.registry_host, args.registry_port, nkey) or "{}")
+        except Exception:
+            ncard = {}
+        if isinstance(ncard, dict) and ncard.get("hostname"):
+            notes = ncard.get("notes") or []
+            notes.append({"text": args.message, "warn": bool(args.warn), "ts": now, "by": by})
+            ncard["notes"] = notes[-50:]   # 留近 50 条，别无限涨
+            if rset(args.registry_host, args.registry_port, nkey, json.dumps(ncard, ensure_ascii=False)):
+                print(f"📌 已钉到 {node} 的卡（notes，别的任务读卡即知）")
+                ok = True
+            else:
+                print("⚠️ 钉卡失败：写不回注册中心。", file=sys.stderr)
+        else:
+            print(f"⚠️ 找不到 {node} 的卡（先确认它已注册），便签没钉上。", file=sys.stderr)
+
+    if not ok:
         sys.exit(1)
 
 
