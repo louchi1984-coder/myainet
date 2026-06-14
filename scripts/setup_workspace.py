@@ -17,9 +17,9 @@ myainet: setup_workspace.py
   python3 setup_workspace.py --dir D:\\myainet-ws                  # 指定盘
   python3 setup_workspace.py --dir /data/ws --registry-host <建网机IP>   # 设好并自报进卡
 
-  # 【主控本地】给某远程节点的工作区建一个"本地把手"——空壳 + CLAUDE.md/AGENTS.md 指向远端。
-  # Desktop 的 Claude/codex 只能选本地文件夹当工作区，选这个壳即可，本地不占地方。
-  python3 setup_workspace.py --handle <远程节点> --registry-host <建网机IP>
+  # 【主控本地】给某远程节点的工作区建"本地把手"——把 CLAUDE.md/AGENTS.md（指向远端）
+  # 写进【当前目录】（= 你在 Desktop 选定的工作区文件夹；要落别处用 --at）。本地不占地方。
+  cd <你选定的本地工作区文件夹> && python3 ~/.../setup_workspace.py --handle <远程节点>
 """
 from __future__ import annotations
 
@@ -84,7 +84,8 @@ def make_local_handle(node: str, host: str, port: int, at: str = "") -> None:
     local_py = sys.executable or "python3"
     dispatch = Path(__file__).resolve().parent / "dispatch.py"
 
-    handle = Path(at).expanduser() if at else (Path.home() / f"myainet-ws-{node}")
+    # 默认落【当前目录】——agent 在用户选定的工作区文件夹里跑，md 就直接进那个文件夹（不再另造 ~/myainet-ws-<节点>）
+    handle = Path(at).expanduser() if at else Path.cwd()
     handle.mkdir(parents=True, exist_ok=True)
 
     md = f"""# myainet 远程工作区·把手（本地空壳，别在这放文件）
