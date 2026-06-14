@@ -16,6 +16,10 @@ myainet: setup_workspace.py
   python3 setup_workspace.py                                       # ~/myainet-ws，仅本机设好
   python3 setup_workspace.py --dir D:\\myainet-ws                  # 指定盘
   python3 setup_workspace.py --dir /data/ws --registry-host <建网机IP>   # 设好并自报进卡
+
+  # 【主控本地】给某远程节点的工作区建一个"本地把手"——空壳 + CLAUDE.md/AGENTS.md 指向远端。
+  # Desktop 的 Claude/codex 只能选本地文件夹当工作区，选这个壳即可，本地不占地方。
+  python3 setup_workspace.py --handle <远程节点> --registry-host <建网机IP>
 """
 from __future__ import annotations
 
@@ -38,6 +42,79 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
 MARKER = Path.home() / ".myainet" / "workspace.json"
 
 
+def make_local_handle(node: str, host: str, port: int, at: str = "") -> None:
+    """在【主控本地】生成"远程工作区把手"——空壳目录 + CLAUDE.md/AGENTS.md。
+    Desktop 的 Claude/codex 只能选本地文件夹当工作区；这个壳让你选它、agent 一打开就读 md，
+    知道真正的工作区在远程节点上，去那边干（dispatch --workspace / ssh）。本地不放文件、不占地方。"""
+    sys.path.insert(0, str(Path(__file__).parent))
+    try:
+        from registry_client import rget
+    except ImportError:
+        print("❌ 找不到 registry_client.py", file=sys.stderr); sys.exit(1)
+
+    if not host:                                  # 没给就从本机身份的 central 读（跟 dispatch 一个规矩）
+        try:
+            host = json.loads((Path.home() / ".myainet" / "identity.json").read_text(encoding="utf-8")).get("central", "")
+        except Exception:
+            host = ""
+    if not host:
+        print("❌ 没有注册中心地址：给 --registry-host，或先把本机配成主控（identity 里有 central）", file=sys.stderr); sys.exit(1)
+
+    try:
+        card = json.loads(rget(host, port, f"node:{node}") or "{}")
+    except Exception as e:
+        print(f"❌ 读注册中心失败（{host}:{port}）：{e}", file=sys.stderr); sys.exit(1)
+    if not isinstance(card, dict) or not card.get("hostname"):
+        print(f"❌ 注册中心查不到节点 {node}（先确认它已注册）", file=sys.stderr); sys.exit(1)
+
+    ws = card.get("workspace") or {}
+    work_dir = ws.get("work_dir")
+    if not work_dir:
+        print(f"❌ 节点 {node} 还没设工作区——先在它上面设：", file=sys.stderr)
+        print(f'   dispatch.py --node {node} "<它的python> <它的scripts>/setup_workspace.py --dir <盘:\\路径> --registry-host {host} --node-name {node}"', file=sys.stderr)
+        sys.exit(1)
+
+    hw = card.get("hardware") or {}
+    net = card.get("network") or {}
+    os_   = ws.get("os") or hw.get("os") or "?"
+    shell = ws.get("shell") or "?"
+    py    = ws.get("python") or card.get("python") or "python3"
+    gpu   = ws.get("gpu") or hw.get("gpu") or "?"
+    ssh_cmd = net.get("ssh_tailscale") or net.get("ssh") or f"ssh {node}"
+    local_py = sys.executable or "python3"
+    dispatch = Path(__file__).resolve().parent / "dispatch.py"
+
+    handle = Path(at).expanduser() if at else (Path.home() / f"myainet-ws-{node}")
+    handle.mkdir(parents=True, exist_ok=True)
+
+    md = f"""# myainet 远程工作区·把手（本地空壳，别在这放文件）
+
+**你打开的是一个"把手"目录，不是真正的工作区。** 真正的工作区在远程节点上；
+本地这里只有这份说明，**不要在本地建 / 下载文件**——所有产物都落在远端那块盘。
+
+## 远程工作区
+- 节点：`{node}`
+- 工作目录(work_dir)：`{work_dir}`
+- 系统：`{os_}`　shell：`{shell}`　解释器：`{py}`　GPU：`{gpu}`
+- SSH：`{ssh_cmd}`
+
+## 怎么干活（在远端，不在本地）
+- 派命令（推荐——自动 cd 到 work_dir、用远端解释器、记账上大屏）：
+  `{local_py} {dispatch} --node {node} --workspace "<在远端跑的命令>"`
+- 交互式进去：`{ssh_cmd}`，再 `cd "{work_dir}"`
+- 看这台实时状态 / 已装能力 / 经验便签：读它的卡 `node:{node}`（myainet 注册中心）或开大屏。
+
+## 规矩
+- 跨 OS 的路径 / 解释器**读上面的契约、别猜**（Windows 反斜杠、解释器可能是 `python` 不是 `python3`）。
+- 别把数据 / 模型往本地放——本地是把手，远端才是盘。
+"""
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (handle / name).write_text(md, encoding="utf-8")
+    print(f"🔗 远程工作区把手已建：{handle}")
+    print(f"   指向：{node}:{work_dir}（{os_}/{shell}）")
+    print("   用法：Desktop 的 Claude/codex 选这个文件夹当工作区——打开即读 CLAUDE.md/AGENTS.md，去远端干。")
+
+
 def main():
     p = argparse.ArgumentParser(description="把本机设成原生工作区（无 Docker）")
     p.add_argument("--dir", default=str(Path.home() / "myainet-ws"),
@@ -45,7 +122,14 @@ def main():
     p.add_argument("--registry-host", default="", help="设好后触发 register_node 自报到这个注册中心")
     p.add_argument("--registry-port", type=int, default=27182)
     p.add_argument("--node-name", default="", help="自报时的节点名（传给 register_node）")
+    p.add_argument("--handle", default="", metavar="节点名",
+                   help="【主控本地】给某远程节点的工作区建一个本地把手（空壳+CLAUDE.md/AGENTS.md 指向远端）——给 Desktop 的 Claude/codex 当本地工作区用，本地不占地方")
+    p.add_argument("--at", default="", help="把手目录放哪（配合 --handle；默认 ~/myainet-ws-<节点>）")
     args = p.parse_args()
+
+    if args.handle:                               # 主控侧：建本地把手，不做节点侧那套
+        make_local_handle(args.handle, args.registry_host, args.registry_port, args.at)
+        return
 
     work_dir = Path(args.dir).expanduser()
     print(f"🧰 设原生工作区 → {work_dir}")

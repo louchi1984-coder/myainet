@@ -408,6 +408,12 @@ ssh <节点> "<卡里的 python> ~/myainet/scripts/setup_workspace.py \
   → dispatch 在那台 `work_dir` 里、用它的盘 + GPU 跑。**agent 给意图，cd 交给 dispatch，解释器读 `workspace.python`。**
   > dispatch 的自动 cd 按节点 **SSH 默认 shell**（Win 默认 cmd，用 `cd /d`）；别把 Windows 节点的默认 shell 改成 powershell，否则 `cd /d` 语法不符。
 
+**④b 本地把手（给 Desktop 的 Claude/codex 用）** —— 那些 app 开会话只能选/建**本地**文件夹当工作区、没法直接开远程工作区。给它建个**空壳**:
+```bash
+python3 ~/myainet/scripts/setup_workspace.py --handle <远程节点> --registry-host <建网机IP>
+```
+它在主控本地建一个目录（默认 `~/myainet-ws-<节点>`）+ 写 `CLAUDE.md`/`AGENTS.md`，内容就是那台远程工作区的 OS 契约（节点/work_dir/os/shell/python/gpu/ssh）+ 怎么派活。**Desktop 选这个本地文件夹当工作区** → agent 一打开自动读这俩 md → 知道真活在远端、去那边干（`dispatch --workspace` / `ssh`）。**本地只放这俩 md、不占地方。**
+
 **⑤ git**
 - `work_dir` 就是那块盘上的真实文件夹 —— 节点**自带的 git** 直接对着它操作；
 - 没装 git 就在那台 `pip install dulwich`（纯 python 的 git，零系统依赖、三平台通用）。
