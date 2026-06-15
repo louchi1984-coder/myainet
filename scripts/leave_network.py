@@ -136,7 +136,7 @@ def main():
     p = argparse.ArgumentParser(description="myainet: 退网")
     p.add_argument("--registry-host", required=True, help="建网机 注册中心 地址")
     p.add_argument("--registry-port", type=int, default=27182)
-    p.add_argument("--node-name", default=None, help="要退网的节点名（默认本机 hostname）")
+    p.add_argument("--node-name", "--node", dest="node_name", default=None, help="要退网的节点名（默认本机 hostname）")
     p.add_argument("--purge", action="store_true", help="连 Tailscale 软件一起卸载")
     p.add_argument("--keep-tailscale", action="store_true", help="不动 Tailscale，只删卡")
     p.add_argument("--dry-run", action="store_true", help="只显示会做什么，不动手")

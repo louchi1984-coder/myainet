@@ -224,7 +224,7 @@ If a sub-task has no suitable node, tell the user clearly and give a fix suggest
 
 **Step 4 Execute & update task status in real time — dispatch each sub-task with `dispatch.py`**
 
-Once confirmed, hand each sub-task to `dispatch.py` (it does the SSH execution + writes `task:*` + echoes back; the console's ③ block reads these):
+Once confirmed, hand each sub-task to `dispatch.py` (it does the SSH execution + writes `task:*` + echoes back; the console's ② block reads these):
 
 ```bash
 python3 ~/myainet/scripts/dispatch.py --registry-host <主IP> --node <节点> --name <任务名> "<命令>"
@@ -251,8 +251,8 @@ python3 ~/myainet/scripts/dispatch.py --registry-host <主IP> --node <节点> --
 | "检查在线" | Read the status from the dashboard/registry center; for per-machine confirmation use `dispatch --node <名> --check` (a real SSH connection). **Never ping yourself** — ICMP is often firewalled and would wrongly mark a live machine as offline |
 | "唤醒 X" / "wake X" | `wake.py --node X` — via X's hub, broadcast a WoL magic packet on its LAN to wake it. Only works if X's card has `wake.mac` (wired NIC + WoL armed) and X is **asleep, not powered-off**. To use a sleeping node, wake it first, then `dispatch` |
 | "评估" / "优化网络" / "现在该装什么" | Read three layers of facts (hardware/environment/network speed) + each card's `problems` → machine-by-machine specifics + advice (idle hardware / missing tools / mismatch / bottleneck; AI capability split into local/cloud) = same as the opening (assessment is the opening; read the full card and lay out facts) |
-| "在 X 上跑 `命令`" / "在 X 上装 Y" / dispatch a task | Task decomposition → `dispatch.py --node X "命令"` (delegate fuzzy tasks to X's agent, see above section) = opening ③ |
-| "退网 X" / "X 不要了" | `leave_network.py --node X` (delete card + leave Tailscale; `--purge` also uninstalls software; `--dry-run` previews) |
+| "在 X 上跑 `命令`" / "在 X 上装 Y" / dispatch a task | Task decomposition → `dispatch.py --node X "命令"` (delegate fuzzy tasks to X's agent, see above section) = opening ② |
+| "退网 X" / "X 不要了" | `leave_network.py --node-name X` (delete card + leave Tailscale; `--purge` also uninstalls software; `--dry-run` previews) |
 | "把建网机换成 Y" / "建网机挂了换 Y" | **on-LAN**: install Y per the hub-build path first (registry center + Tailscale + bind 0.0.0.0) → `transfer_role.py --old-host 主 --new-host Y` (add `--from-mirror` if the old hub already died) → wrap up per the checklist; **the old hub auto-demotes to control** (not a node) |
 | "在 X 上给我开个工作区" / "借 X 的盘当工作区" | 〈Remote workspace〉: `setup_workspace.py` creates work_dir on X's emptiest disk + self-reports an OS contract into the card (**native, no container, no Docker**); dispatch work via `dispatch --workspace`, cd after `ssh X` (see the dedicated section) |
 
@@ -788,7 +788,7 @@ After the user confirms the role assignment, generate `myainet-network-config.md
 你现在接入了一套 myainet 个人 AI 网络。接到任务：① 按类型选合适的节点（本地能干的先本地，再云端 API）；② **经 dispatch 执行、会改机器状态的动作 report 一笔** —— 别自己 ssh 直连跑活儿，那样网络对它就失去感知了。
 
 【建网机（中枢）】<hostname>  LAN <LAN_IP> / TS <TS_IP>（外网用 TS）
-- 注册中心 注册中心：<建网IP>:27182    脚本：~/myainet/scripts/
+- 注册中心：<建网IP>:27182    脚本：~/myainet/scripts/
 
 【<角色名>节点】<hostname>  <ip>
 - 主能力：<角色> / 硬件：<简要硬件> / 可接任务：<具体任务类型>

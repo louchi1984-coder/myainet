@@ -130,7 +130,7 @@ def main():
     p.add_argument("--node-name", default="", help="自报时的节点名（传给 register_node）")
     p.add_argument("--handle", default="", metavar="节点名",
                    help="【主控本地】给某远程节点的工作区建一个本地把手（空壳+CLAUDE.md/AGENTS.md 指向远端）——给 Desktop 的 Claude/codex 当本地工作区用，本地不占地方")
-    p.add_argument("--at", default="", help="把手目录放哪（配合 --handle；默认 ~/myainet-ws-<节点>）")
+    p.add_argument("--at", default="", help="把手目录放哪（配合 --handle；默认当前目录＝你选定的工作区文件夹）")
     args = p.parse_args()
 
     if args.handle:                               # 主控侧：建本地把手，不做节点侧那套

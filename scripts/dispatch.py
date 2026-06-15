@@ -163,8 +163,8 @@ def _delegate_command(card, goal):
     avail = set()
     for a in (card.get("agents") or []):
         name = str(a).split(":", 1)[0].strip().lower()
-        ok = ":" not in str(a) or str(a).split(":", 1)[1].strip().lower() in ("yes", "true", "1")
-        if ok:
+        ver = str(a).split(":", 1)[1].strip().lower() if ":" in str(a) else ""
+        if name and ver not in ("no", "false", "0"):   # sysinfo 只列装了的；版本号/yes 都算装了，只有显式 no 才排除
             avail.add(name)
     for name in ("codex", "claude", "opencode"):
         if name in avail:
@@ -175,7 +175,6 @@ def _delegate_command(card, goal):
                 return f'claude -p "{g}"', name
             return f'opencode run "{g}"', name
     return None, None
-    return None
 
 
 def ssh_target(card):
