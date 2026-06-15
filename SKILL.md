@@ -180,7 +180,7 @@ When the user issues a task, the skill executes the following logic (**the progr
 >
 > **One principle: write valuable experience down — in the right home by scope.**
 > - **Machine-level facts** (a capability `sysinfo` can't collect — TTS / image gen / digital human / vector DB installed; a machine-level config that tested best on this box) **→ that node's card `notes`** via `report.py --node <节点> --card "…"` — useful to *any* task touching this machine; a patrol card refresh won't wipe it.
-> - **Project-level experience** (one of *your projects* working through a node — its pitfalls, the best config for *that project's* pipeline, project conventions) **→ that project's own folder MD** (e.g. the remote-workspace handle's `CLAUDE.md`/`AGENTS.md`; the project agent reads it next time it works in that folder). It belongs to the project, not to myainet — don't push project knowledge into the registry.
+> - **Project-level experience** (one of *your projects* working through a node — its pitfalls, the best config for *that project's* pipeline, project conventions) **→ that project's own folder MD** (`CLAUDE.md`/`AGENTS.md` in the project's directory; the project agent reads it next time it works there). **This applies to ANY project, not just a freshly-made workspace handle** — for a long-running project that already has a folder, write into its existing MD (create the file, or add a `## 本项目经验` section, if it has none). When you've accumulated useful project experience, proactively suggest writing it there. It belongs to the project, not to myainet — don't push project knowledge into the registry.
 > **You judge what's "valuable" and which home it belongs in.**
 > Example: `--card "装了 IndexTTS2(TTS)；实测此卡 CPU 比 GPU 快 3-5x，别再试 GPU 加速"`.
 
