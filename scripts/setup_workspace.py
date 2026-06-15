@@ -108,6 +108,11 @@ def make_local_handle(node: str, host: str, port: int, at: str = "") -> None:
 ## 规矩
 - 跨 OS 的路径 / 解释器**读上面的契约、别猜**（Windows 反斜杠、解释器可能是 `python` 不是 `python3`）。
 - 别把数据 / 模型往本地放——本地是把手，远端才是盘。
+
+## 本项目经验（往这记、别删旧的）
+<在这个项目里用这台机器/工作区干活攒的经验都写这儿：哪个配置/参数最优、踩过的坑、验过走不通的方向。
+下次在这个文件夹开会话会自动读到，不必从零再试。
+（机器级的客观事实——比如"这台装了 X 能力"——写它的注册卡 `notes`，不写这。这里只放*本项目*的经验。）>
 """
     for name in ("CLAUDE.md", "AGENTS.md"):
         (handle / name).write_text(md, encoding="utf-8")

@@ -178,7 +178,10 @@ When the user issues a task, the skill executes the following logic (**the progr
 > `python3 ~/myainet/scripts/report.py --registry-host <主IP> --node <节点> "在装新 ollama / 不行已回退"` (add `--warn` if unsure / if something went wrong).
 > **dispatch records "what command ran", report records "what changed / whether it's good"** — together, the network won't spiral out of control from "another task quietly changed the machine and backed out".
 >
-> **One principle: write valuable experience onto the card.** Anything installed / tuned / discovered that's useful for other tasks — a capability `sysinfo` can't collect (TTS / image gen / digital human / vector DB), a config that tested best, a dead-end direction — write it into that card's `notes` via `report.py --node <节点> --card "…"`. **You judge what counts as "valuable".** Once written, a patrol card refresh won't wipe it; the next task reads the card and knows, avoiding repeated trial-and-error.
+> **One principle: write valuable experience down — in the right home by scope.**
+> - **Machine-level facts** (a capability `sysinfo` can't collect — TTS / image gen / digital human / vector DB installed; a machine-level config that tested best on this box) **→ that node's card `notes`** via `report.py --node <节点> --card "…"` — useful to *any* task touching this machine; a patrol card refresh won't wipe it.
+> - **Project-level experience** (one of *your projects* working through a node — its pitfalls, the best config for *that project's* pipeline, project conventions) **→ that project's own folder MD** (e.g. the remote-workspace handle's `CLAUDE.md`/`AGENTS.md`; the project agent reads it next time it works in that folder). It belongs to the project, not to myainet — don't push project knowledge into the registry.
+> **You judge what's "valuable" and which home it belongs in.**
 > Example: `--card "装了 IndexTTS2(TTS)；实测此卡 CPU 比 GPU 快 3-5x，别再试 GPU 加速"`.
 
 **Step 1 Decompose the task**
