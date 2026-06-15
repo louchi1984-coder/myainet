@@ -425,6 +425,44 @@ except Exception:
     _models = []
 emit("models", _json.dumps(_models, ensure_ascii=False))
 
+
+# ── 远程唤醒（WoL）：有线网卡 MAC + 是否已武装 magic packet ──────────────────────
+# 只采"能唤醒"的事实进卡；主控据此对离线节点标「可唤醒」、并经建网机发 WoL。
+# WoL 只能唤睡眠/休眠、不能唤已断电；无有线网卡 / 未武装 → None（标不可唤醒）。
+def _wake():
+    import re
+    try:
+        if IS_WIN:
+            out = (ps("$a=Get-NetAdapter -Physical -ErrorAction SilentlyContinue | "
+                      "Where-Object {$_.Status -eq 'Up' -and $_.PhysicalMediaType -notmatch 'Wireless|802.11' "
+                      "-and $_.InterfaceDescription -notmatch 'Virtual|Bluetooth|Loopback'} | Select-Object -First 1; "
+                      "if($a){$w=(Get-NetAdapterPowerManagement -Name $a.Name -ErrorAction SilentlyContinue).WakeOnMagicPacket; "
+                      "\"$($a.MacAddress)|$w\"}") or "").strip()
+            if "|" in out:
+                mac, w = out.split("|", 1)
+                mac = mac.strip().replace("-", ":").upper()
+                if re.fullmatch(r"([0-9A-F]{2}:){5}[0-9A-F]{2}", mac):
+                    return {"mac": mac, "armed": "enabled" in w.lower()}
+        elif IS_LIN:
+            m = re.search(r"dev (\S+)", run("ip", "route", "get", "8.8.8.8") or "")
+            if m:
+                ifc = m.group(1)
+                p = Path(f"/sys/class/net/{ifc}/address")
+                mac = (p.read_text().strip() if p.exists() else "").upper()
+                if re.fullmatch(r"([0-9A-F]{2}:){5}[0-9A-F]{2}", mac):
+                    armed = bool(re.search(r"Wake-on:\s*[a-z]*g", run("ethtool", ifc) or ""))
+                    return {"mac": mac, "armed": armed, "iface": ifc}
+        # macOS：本项目 Mac 多为 WiFi 笔记本，WoL 不适用，从简不采
+    except Exception:
+        pass
+    return None
+
+try:
+    _wk = _wake()
+except Exception:
+    _wk = None
+emit("wake", _json.dumps(_wk, ensure_ascii=False) if _wk else "")
+
 # ── 原生远程工作区（机器自报标记 ~/.myainet/workspace.json，若这台设过）──────────────
 # 工作区是这台机的一项资源：自报进卡，全网（assemble/控制台/dispatch）才 read-don't-guess
 # 「这台有工作区 + 它的 OS 契约」。原生 = 就用本机 OS/python/GPU/盘，无容器。无标记则报空。

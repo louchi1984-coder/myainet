@@ -93,6 +93,10 @@ def build_node_card(info: dict, node_name: str = None, role: str = "",
         disks = json.loads(info.get("disks") or "[]")
     except Exception:
         disks = []
+    try:                                  # 远程唤醒：有线 MAC + 是否武装 WoL（无线/未武装/无网卡=null=不可唤醒）
+        wake = json.loads(info.get("wake") or "null")
+    except Exception:
+        wake = None
     always_on = info.get("is_always_on", "?")
     problems  = derive_problems(info, agents, cli)
 
@@ -115,6 +119,7 @@ def build_node_card(info: dict, node_name: str = None, role: str = "",
         "cli":       cli,       # CLI 工具/运行时（SSH 命令可控）
         "gui":       gui,       # GUI 应用（要靠 computer-use 控）
         "models":    models,    # 本地大模型（运行时无关：ollama / LM Studio / HF 缓存）
+        "wake":      wake,      # 远程唤醒(WoL)：{mac, armed}；离线节点据此标「可唤醒」、经建网机发 magic packet。null=不可唤醒(无有线网卡/未武装/WiFi 笔记本)
         "workspace": workspace, # 原生远程工作区（自报标记 → OS 契约 os/shell/work_dir/python/gpu）；全网据此知道这台有工作区，dispatch --workspace 进去派活。无=null
         "python":    info.get("python", ""),   # 这台机器自报的 Python 解释器路径。跨平台调它上面的脚本读这个，别猜 python/python3
         "scripts_dir": str(Path(__file__).resolve().parent),  # 这台机器上 skill 脚本的真实目录（装在哪自报）；patrol 远程刷新卡时用它，不假设 ~/myainet
