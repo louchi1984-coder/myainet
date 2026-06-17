@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -221,6 +222,73 @@ def _verdict(core_ok: bool, ssh_ok: bool, ts_ok: bool, sec: str = None):
     sys.exit(1)
 
 
+# ── 开机自启：重启后建网机的注册中心/大屏/巡检自己回来（跑 setup_hub --skip-ssh，幂等自愈），
+# 像 Tailscale 那样不靠人/主控手动救。不分系统：Win 计划任务 / Linux systemd-user(+linger) 或 crontab / mac launchd。
+AUTOSTART = "myainet-hub"
+
+
+def _autostart_cmd(sec):
+    c = [PY, str(SCRIPTS / "setup_hub.py"), "--skip-ssh"] + (["--main", sec] if sec else [])
+    return c
+
+
+def _ensure_autostart(sec=None) -> bool:
+    """注册开机自启；失败只警告、不拦路。"""
+    cmd = _autostart_cmd(sec)
+    try:
+        if IS_WIN:
+            tr = " ".join((f'"{x}"' if (" " in x or ":" in x or "\\" in x) else x) for x in cmd)
+            return subprocess.run(["schtasks", "/create", "/tn", AUTOSTART, "/sc", "onlogon",
+                                   "/rl", "highest", "/f", "/tr", tr],
+                                  capture_output=True, text=True).returncode == 0
+        if sys.platform == "darwin":
+            p = Path.home() / "Library" / "LaunchAgents" / "com.myainet.hub.plist"
+            p.parent.mkdir(parents=True, exist_ok=True)
+            args_xml = "".join(f"<string>{x}</string>" for x in cmd)
+            p.write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
+                         '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
+                         '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n'
+                         '<plist version="1.0"><dict>'
+                         '<key>Label</key><string>com.myainet.hub</string>'
+                         f'<key>ProgramArguments</key><array>{args_xml}</array>'
+                         '<key>RunAtLoad</key><true/></dict></plist>\n', encoding="utf-8")
+            subprocess.run(["launchctl", "unload", str(p)], capture_output=True)
+            return subprocess.run(["launchctl", "load", "-w", str(p)], capture_output=True).returncode == 0
+        # Linux
+        if shutil.which("systemctl"):
+            u = Path.home() / ".config" / "systemd" / "user" / "myainet-hub.service"
+            u.parent.mkdir(parents=True, exist_ok=True)
+            u.write_text("[Unit]\nDescription=myainet hub (registry/dashboard/patrol)\n"
+                         "[Service]\nType=oneshot\nExecStart=" + " ".join(cmd) + "\n"
+                         "[Install]\nWantedBy=default.target\n", encoding="utf-8")
+            subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
+            ok = subprocess.run(["systemctl", "--user", "enable", "myainet-hub.service"],
+                                capture_output=True).returncode == 0
+            subprocess.run(["loginctl", "enable-linger", os.environ.get("USER", "")], capture_output=True)
+            return ok
+        cur = subprocess.run(["crontab", "-l"], capture_output=True, text=True).stdout or ""
+        if AUTOSTART in cur:
+            return True
+        line = "@reboot " + " ".join(cmd) + "  # " + AUTOSTART
+        new = (cur.rstrip("\n") + "\n" if cur.strip() else "") + line + "\n"
+        return subprocess.run(["crontab", "-"], input=new, text=True).returncode == 0
+    except Exception:
+        return False
+
+
+def _autostart_present() -> bool:
+    try:
+        if IS_WIN:
+            return subprocess.run(["schtasks", "/query", "/tn", AUTOSTART], capture_output=True).returncode == 0
+        if sys.platform == "darwin":
+            return (Path.home() / "Library" / "LaunchAgents" / "com.myainet.hub.plist").exists()
+        if (Path.home() / ".config" / "systemd" / "user" / "myainet-hub.service").exists():
+            return True
+        return AUTOSTART in (subprocess.run(["crontab", "-l"], capture_output=True, text=True).stdout or "")
+    except Exception:
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser(description="一条命令建『建网机』（确定性，不靠 agent 拼命令）")
     ap.add_argument("--registry-host", default="127.0.0.1")
@@ -246,6 +314,7 @@ def main():
         ssh_ok = _port_up("127.0.0.1", 22, tries=2)
         print("Tailscale：")
         ts_ok = _tailscale(do_install=False)
+        print("开机自启 " + ("✅ 已注册" if _autostart_present() else "❌ 没注册（重启后服务不自动回，跑一次 setup_hub 补上）"))
         _verdict(core_ok, ssh_ok, ts_ok, sec)
         return
 
@@ -300,8 +369,13 @@ def main():
         print("   把 Tailscale IP 刷进节点卡 …")
         _fg("register_node.py", "--registry-host", H)
 
-    # ⑦ 自检 + 如实报告（次只验注册中心在听；主走 healthcheck 全套。缺一就不报成功、exit 1）
-    print("\n⑦ 自检：")
+    # ⑦ 开机自启（重启后注册中心/大屏/巡检自己回来；像 Tailscale 那样不靠人/主控手动救）
+    print("⑦ 开机自启 …")
+    print("   ✅ 已注册（重启后自动拉起）" if _ensure_autostart(sec)
+          else "   ⚠️ 没注册上（不影响本次；重启后需手动跑 setup_hub 补起）")
+
+    # ⑧ 自检 + 如实报告（次只验注册中心在听；主走 healthcheck 全套。缺一就不报成功、exit 1）
+    print("\n⑧ 自检：")
     ssh_ok = args.skip_ssh or _port_up("127.0.0.1", 22, tries=2)   # --skip-ssh 时不强求
     if sec:
         core_ok = _port_up("127.0.0.1", P, tries=2)
